@@ -1,0 +1,28 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Latest Sports News - PitchMasters{% endblock title %}
+
+{% block date_strip_container %}{% endblock date_strip_container %}
+
+{% block extra_css %}
+.news-row { background: var(--bg-card); border: 1px solid var(--border-grey); border-radius: 12px; overflow: hidden; margin-bottom: 16px; cursor: pointer; display: flex; flex-direction: column; }
+.news-image-placeholder { height: 160px; background: #121214; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 24px; border-bottom: 1px solid var(--border-grey); }
+.news-details { padding: 16px; }
+.news-tag { font-size: 10px; font-weight: 700; color: var(--brand-orange); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: inline-block; }
+.news-heading { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 8px; }
+.news-snippet { color: var(--text-secondary); font-size: 12px; }
+{% endblock extra_css %}
+
+{% block content %}
+<h2 style="font-size:18px; font-weight:800; margin-bottom:16px;">Top Media Headlines</h2>
+
+<div class="news-row">
+    <div class="news-image-placeholder"><i class="bi bi-image"></i></div>
+    <div class="news-details">
+        <span class="news-tag">World Cup 2026</span>
+        <h3 class="news-heading">Tournament Preview: Group Stage Telemetry and Predictions</h3>
+        <p class="news-snippet">Analyzing the modern tactical set pieces, expected goals (xG) metrics, and dark horses
+            preparing for kick-off this summer.</p>
+    </div>
+</div>
+{% endblock content %}

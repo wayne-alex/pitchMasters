@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>PitchMasters Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --brand-orange: #D85A30;
+            --border-grey: #27272a;
+            --bg-dark: #000000;
+            --bg-card: #09090b;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: #f4f4f5;
+            overflow: hidden;
+        }
+
+        /* Immersive App View Wrapper */
+        .app-viewport {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            padding: calc(48px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;
+        }
+
+        /* Scrollable interface container */
+        .app-scroll-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            max-width: 460px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .brand-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-top: 10vh;
+            margin-bottom: 32px;
+        }
+
+        /* --- Circular Orange Filled Logo with White Text --- */
+        .custom-badge-logo {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--brand-orange);
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(216, 90, 48, 0.25);
+        }
+
+        .logo-text {
+            font-size: 26px;
+            font-weight: 900;
+            color: #000000;
+            letter-spacing: -0.05em;
+            line-height: 1;
+        }
+
+        .brand-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.03em;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 2px;
+        }
+
+        /* --- Interactive Native Forms --- */
+        .form-container {
+            width: 100%;
+            margin-bottom: auto;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #71717a;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 14px;
+            color: #52525b;
+            font-size: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-grey);
+            border-radius: 8px;
+            height: 48px;
+            padding: 0 14px 0 42px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--brand-orange);
+            background: #121214;
+        }
+
+        /* --- App Style Error Alert --- */
+        .error-banner {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- Fixed Bottom Native Button Placement & States --- */
+        .action-btn {
+            width: 100%;
+            background: var(--brand-orange);
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            height: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:active:not(:disabled) {
+            opacity: 0.85;
+            transform: scale(0.995);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Native Micro-Spinner Animation */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid #000000;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.65s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-viewport">
+    <div class="app-scroll-content">
+
+        <div class="brand-section">
+            <div class="custom-badge-logo">
+                <span class="logo-text">PM</span>
+            </div>
+            <h1 class="brand-title">PitchMasters</h1>
+            <span class="brand-subtitle">Tournament Workspace</span>
+        </div>
+
+        <div class="form-container">
+            <div class="error-banner" id="errorBanner"
+                 style="display: {% if form.errors or form.non_field_errors %}flex{% else %}none{% endif %};">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span id="errorText">Invalid credentials or restricted admin access level.</span>
+            </div>
+
+            <form id="adminLoginForm" method="POST" action="{% url 'adminLoginView' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Organization Email </label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-person"></i>
+                        <input type="text" name="username" class="form-control" placeholder="admin@pitchmasters.com"
+                               required autofocus autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-lock"></i>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required
+                               autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="action-btn" id="submitBtn">
+                    <span id="btnText">Sign In to Workspace</span>
+                    <i class="bi bi-chevron-right" id="btnIcon"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = this;
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const errorBanner = document.getElementById('errorBanner');
+        const errorText = document.getElementById('errorText');
+
+        submitBtn.disabled = true;
+        btnText.textContent = "Connecting...";
+        btnIcon.className = "spinner";
+        errorBanner.style.display = "none";
+
+        // Form Data Gathering
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return; // Already handled by standard view redirects
+
+                if (data.success) {
+                    window.location.href = data.redirect_url || '/dashboard/';
+                } else {
+                    // Revert loading layout to show authentication error
+                    submitBtn.disabled = false;
+                    btnText.textContent = "Sign In to Workspace";
+                    btnIcon.className = "bi bi-chevron-right";
+
+                    errorText.textContent = data.message || "Invalid credentials or restricted admin access level.";
+                    errorBanner.style.display = "flex";
+                }
+            })
+            .catch(error => {
+                // Revert layout on complete network pipeline drop out
+                submitBtn.disabled = false;
+                btnText.textContent = "Sign In to Workspace";
+                btnIcon.className = "bi bi-chevron-right";
+
+                errorText.textContent = "Network communication error. Verify infrastructure link.";
+                errorBanner.style.display = "flex";
+            });
+    });
+</script>
+</body>
+</html>

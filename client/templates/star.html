@@ -1,0 +1,15 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Your Starred Items - PitchMasters{% endblock title %}
+
+{% block date_strip_container %}{% endblock date_strip_container %}
+
+{% block content %}
+<h2 style="font-size:18px; font-weight:800; margin-bottom:16px;">Your Starred Items</h2>
+
+<!-- Example Condition check for handling non-authenticated or empty contexts cleanly -->
+<div class="placeholder-view">
+  <i class="bi bi-star"></i>
+  You haven't pinned any items yet. Star live matches or leagues to display them here for faster retrieval.
+</div>
+{% endblock content %}

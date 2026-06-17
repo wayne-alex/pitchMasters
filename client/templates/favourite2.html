@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <title>Push Notifications - PitchMasters™</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        }
+
+        .status-bar {
+            height: 30px;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .header {
+            padding: 1.5rem 1.5rem 1rem;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .back-btn:hover {
+            color: #FF5722;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .page-indicator {
+            font-size: 0.875rem;
+            color: #999;
+            margin-bottom: 0.5rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 900;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.5;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .category-selector {
+            padding: 0 1.5rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .category-btn {
+            padding: 0.625rem 1.25rem;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn:hover {
+            background-color: #FF5722;
+        }
+
+        .content {
+            padding: 0 1.5rem 2rem;
+            max-height: calc(100vh - 420px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #FF5722;
+            border-radius: 3px;
+        }
+
+        .notification-type {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+        }
+
+        .item-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background-color: #FF5722;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .item-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background-color: #FF5722;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            padding: 0;
+        }
+
+        .toggle-switch.off {
+            background-color: #333;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.off::after {
+            left: 24px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background-color: #000;
+            border-top: 1px solid #1a1a1a;
+            z-index: 100;
+        }
+
+        .footer button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #FF5722;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer button:hover {
+            background-color: #ff6a38;
+        }
+
+        .footer button:active {
+            transform: scale(0.98);
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header {
+                padding: 1rem 1rem 0.75rem;
+                gap: 0.75rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .description {
+                font-size: 0.85rem;
+                padding: 0 1rem 1rem;
+            }
+
+            .category-selector {
+                padding: 0 1rem 1rem;
+            }
+
+            .content {
+                padding: 0 1rem 10rem;
+            }
+
+            .notification-item {
+                padding: 0.875rem;
+            }
+
+            .item-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+
+            .item-name {
+                font-size: 0.9rem;
+            }
+
+            .toggle-switch {
+                width: 44px;
+                height: 24px;
+            }
+
+            .toggle-switch::after {
+                width: 20px;
+                height: 20px;
+            }
+
+            .toggle-switch.off::after {
+                left: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="header">
+        <button class="back-btn" id="backBtn">&larr;</button>
+        <div class="header-content">
+            <div class="page-indicator">2 of 2</div>
+            <h1>Push Notifications</h1>
+        </div>
+    </div>
+
+    <p class="description">Select the types of notifications you would like to receive for your favourites</p>
+
+    <div class="category-selector">
+        <button class="category-btn" data-category="football">Football</button>
+    </div>
+
+
+    <div class="content" id="content">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+
+    <div class="footer">
+        <button id="nextBtn">Next</button>
+        <p class="footer-note">You can modify these preferences later in notification settings</p>
+    </div>
+
+    <script>
+        const FAVORITES_KEY = 'pitchmasters_favorites';
+        const NOTIFICATIONS_KEY = 'pitchmasters_notifications';
+
+        // Sample data with icons
+        const itemsData = {
+            football: {
+                't1': { name: 'Argentina', icon: '🇦🇷' },
+                't2': { name: 'Spain', icon: '🇪🇸' },
+                't3': { name: 'France', icon: '🇫🇷' },
+                't4': { name: 'England', icon: '🇬🇧' },
+                't5': { name: 'Brazil', icon: '🇧🇷' },
+                't6': { name: 'Germany', icon: '🇩🇪' },
+                't7': { name: 'Italy', icon: '🇮🇹' },
+                't8': { name: 'Netherlands', icon: '🇳🇱' },
+                'c1': { name: 'World Cup 2026', icon: '🏆' },
+                'c2': { name: 'Premier League', icon: '⚽' },
+                'c3': { name: 'LaLiga', icon: '⚽' },
+                'c4': { name: 'Serie A', icon: '⚽' },
+                'c5': { name: 'Bundesliga', icon: '⚽' },
+                'c6': { name: 'Ligue 1', icon: '⚽' },
+                'c7': { name: 'Champions League', icon: '🏆' },
+                'c8': { name: 'Europa League', icon: '🏆' }
+            },
+            basketball: {
+                'b1': { name: 'NBA', icon: '🏀' },
+                'b2': { name: 'EuroLeague', icon: '🏀' }
+            },
+            tennis: {
+                'tn1': { name: 'ATP Tour', icon: '🎾' },
+                'tn2': { name: 'WTA Tour', icon: '🎾' }
+            }
+        };
+
+        const notificationTypes = ['News', 'Matches', 'Results', 'Standings'];
+
+        let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+        let notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY)) || {};
+        let currentCategory = 'football';
+
+        function init() {
+            renderContent();
+            setupEventListeners();
+
+            // Show empty state if no favorites
+            if (favorites.length === 0) {
+                document.getElementById('content').innerHTML = '<div class="empty-state"><p>No favourites selected. Please go back to add favourites.</p></div>';
+            }
+        }
+
+        function setupEventListeners() {
+            // Back button
+            document.getElementById('backBtn').addEventListener('click', () => {
+                window.history.back();
+            });
+
+            // Category selection
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentCategory = btn.dataset.category;
+                    renderContent();
+                });
+            });
+
+            // Next button
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+                // Redirect to main app or success page
+                window.location.href = '/app'; // Update with your URL
+            });
+        }
+
+        function renderContent() {
+            const contentDiv = document.getElementById('content');
+            const categoryItems = itemsData[currentCategory] || {};
+
+            // Filter to show only favorited items
+            const favoritedItems = Object.entries(categoryItems).filter(([id]) =>
+                favorites.includes(id)
+            );
+
+            if (favoritedItems.length === 0) {
+                contentDiv.innerHTML = '<div class="empty-state"><p>No favourites in this category</p></div>';
+                return;
+            }
+
+            let html = '';
+
+            notificationTypes.forEach(type => {
+                html += `<div class="notification-type">${type}</div>`;
+
+                favoritedItems.forEach(([id, item]) => {
+                    const notifKey = `${id}_${type}`;
+                    const isEnabled = notifications[notifKey] ?? true; // Default to enabled
+
+                    html += `
+                        <div class="notification-item">
+                            <div class="item-content">
+                                <div class="item-icon">${item.icon}</div>
+                                <div class="item-name">${item.name}</div>
+                            </div>
+                            <button
+                                class="toggle-switch ${isEnabled ? '' : 'off'}"
+                                data-id="${id}"
+                                data-type="${type}"
+                            ></button>
+                        </div>
+                    `;
+                });
+            });
+
+            contentDiv.innerHTML = html;
+
+            // Add toggle event listeners
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    const id = toggle.dataset.id;
+                    const type = toggle.dataset.type;
+                    const notifKey = `${id}_${type}`;
+
+                    notifications[notifKey] = !notifications[notifKey];
+                    toggle.classList.toggle('off');
+                });
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

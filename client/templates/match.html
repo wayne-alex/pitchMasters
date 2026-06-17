@@ -1,0 +1,665 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Matches - PitchMasters{% endblock %}
+
+{% block extra_css %}
+/* Horizontal Slip Carousel */
+.slip-carousel-wrapper {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.slip-carousel {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.slip-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.slip-item {
+  flex-shrink: 0;
+  width: 140px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-grey);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  scroll-snap-align: start;
+  transform-origin: center;
+}
+
+.slip-item:hover {
+  border-color: var(--brand-orange);
+  transform: translateY(-2px);
+}
+
+.slip-item.is-selected {
+  width: 240px;
+  background: linear-gradient(135deg, rgba(216, 90, 48, 0.1), rgba(0, 102, 255, 0.05));
+  border-color: var(--brand-orange);
+  box-shadow: 0 8px 24px rgba(216, 90, 48, 0.15);
+}
+
+.slip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.slip-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--brand-orange);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.slip-matchup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slip-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e4e4e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slip-team-icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  background: var(--border-grey);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #52525b;
+}
+
+.slip-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  padding: 4px 0;
+}
+
+.slip-status {
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.slip-item.is-selected .slip-status {
+  color: var(--brand-orange);
+}
+
+.slip-item.is-live .slip-status {
+  color: #ef4444;
+  animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Section Headers */
+.matches-section {
+  margin-bottom: 28px;
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 16px 0;
+  padding: 0 4px;
+}
+
+.section-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-grey);
+  flex-shrink: 0;
+}
+
+.section-badge .logo-txt-top {
+  font-size: 10px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.section-badge .logo-txt-bottom {
+  font-size: 10px;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 0.5px #52525b;
+}
+
+.section-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.section-category {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.section-accent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #ef4444;
+  text-transform: uppercase;
+}
+
+/* Match Card in List */
+.match-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-grey);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.match-card:hover {
+  border-color: var(--border-grey-light);
+}
+
+.match-card.is-live {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.02);
+}
+
+.match-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.match-group {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.match-star-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.match-star-btn:hover {
+  color: var(--brand-orange);
+}
+
+.match-star-btn.is-active {
+  color: var(--brand-orange);
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  gap: 10px;
+}
+
+.team-row + .team-row {
+  margin-top: 6px;
+}
+
+.time-label {
+  width: 44px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.time-label.is-live {
+  color: #ef4444;
+  animation: pulse-live 1.5s infinite;
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.team-crest {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  background: var(--border-grey);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #52525b;
+}
+
+.team-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e4e4e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-box {
+  width: 28px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-state i {
+  font-size: 40px;
+  margin-bottom: 12px;
+  color: #3f3f46;
+}
+
+.empty-state-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e4e4e7;
+  margin-bottom: 4px;
+}
+
+.empty-state-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Tabs */
+.tab-selector {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-grey);
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab-btn:hover {
+  color: #fff;
+}
+
+.tab-btn.is-active {
+  color: var(--brand-orange);
+  font-weight: 700;
+}
+
+.tab-btn.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand-orange);
+  border-radius: 2px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.is-active {
+  display: block;
+}
+
+/* Favorite Star Section */
+.favorites-intro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(216, 90, 48, 0.08);
+  border: 1px solid rgba(216, 90, 48, 0.2);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--brand-orange);
+  font-weight: 600;
+}
+
+.favorites-intro i {
+  font-size: 16px;
+}
+
+/* Calendar Click Fix Context Layout */
+#calendarBtn {
+  position: relative !important;
+  overflow: hidden;
+}
+
+.calendar-input-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+}
+{% endblock %}
+
+{% block date_strip_container %}
+<div class="date-strip-wrapper" id="dateStrip">
+    <button class="static-date-btn live-accent" id="liveToggle"><i class="bi bi-circle-fill"></i>LIVE</button>
+    <div class="date-scroll-center" id="dateScrollContainer">
+        {% for date in date_strip %}
+        <a href="?date={{ date.date_str }}" class="date-chip-base {% if date.is_selected %}active{% endif %}">
+            <span class="day">{{ date.label }}</span>
+            <span class="num">{{ date.date_obj|date:"d" }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    <button class="static-date-btn" id="calendarBtn">
+        <i class="bi bi-calendar3"></i>
+        <input type="date" class="calendar-input-overlay" id="hiddenCalendarPicker">
+    </button>
+</div>
+{% endblock date_strip_container %}
+
+{% block content %}
+<!-- Tabs: All / Favorites -->
+<div class="tab-selector">
+    <button class="tab-btn is-active" onclick="switchTab(this, 'all-matches-tab')">
+        All Matches
+    </button>
+    <button class="tab-btn" onclick="switchTab(this, 'favorites-tab')">
+        <i class="bi bi-star-fill" style="margin-right: 4px; font-size: 11px;"></i>
+        Favorites
+    </button>
+</div>
+
+<!-- TAB: All Matches -->
+<div class="tab-content is-active" id="all-matches-tab">
+    {% if competitions %}
+    {% for competition in competitions %}
+    <div class="matches-section">
+        <!-- Section Header -->
+        <div class="section-divider">
+            <div class="section-badge">
+                <span class="logo-txt-top">{{ competition.prefix_top }}</span>
+                <span class="logo-txt-bottom">{{ competition.prefix_bottom }}</span>
+            </div>
+            <div class="section-meta">
+                <div class="section-title">{{ competition.name }}</div>
+                <div class="section-category">{{ competition.category }}</div>
+            </div>
+            {% if competition.live_count > 0 %}
+            <div class="section-accent">
+                <i class="bi bi-circle-fill" style="font-size: 6px;"></i>
+                {{ competition.live_count }} Live
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Matches -->
+        {% for match in competition.matches %}
+        <div class="match-card {% if match.is_live %}is-live{% endif %}" onclick="viewMatch('{{ match.id }}')">
+            <div class="match-top">
+                <span class="match-group">{{ match.group_label }}</span>
+                <button class="match-star-btn {% if match.is_fav %}is-active{% endif %}"
+                        onclick="event.stopPropagation(); toggleFav('{{ match.id }}')"
+                        data-match-id="{{ match.id }}">
+                    <i class="bi {% if match.is_fav %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                </button>
+            </div>
+
+            <div class="team-row">
+                <span class="time-label {% if match.is_live %}is-live{% endif %}">{{ match.time_label }}</span>
+                <div class="team-info">
+                    <div class="team-crest">?</div>
+                    <span class="team-name">{{ match.team1_name }}</span>
+                </div>
+                <span class="score-box">{{ match.team1_score }}</span>
+            </div>
+
+            <div class="team-row">
+                <span class="time-label"></span>
+                <div class="team-info">
+                    <div class="team-crest">?</div>
+                    <span class="team-name">{{ match.team2_name }}</span>
+                </div>
+                <span class="score-box">{{ match.team2_score }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <div class="empty-state-title">No matches scheduled</div>
+        <div class="empty-state-text">No fixtures for this date yet</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- TAB: Favorites -->
+<div class="tab-content" id="favorites-tab">
+    {% if favorites_competitions %}
+    <div class="favorites-intro">
+        <i class="bi bi-star-fill"></i>
+        <span>Your starred matches for {{ target_date|date:"M d" }}</span>
+    </div>
+
+    {% for competition in favorites_competitions %}
+    <div class="matches-section">
+        <!-- Section Header -->
+        <div class="section-divider">
+            <div class="section-badge">
+                <span class="logo-txt-top">{{ competition.prefix_top }}</span>
+                <span class="logo-txt-bottom">{{ competition.prefix_bottom }}</span>
+            </div>
+            <div class="section-meta">
+                <div class="section-title">{{ competition.name }}</div>
+                <div class="section-category">{{ competition.category }}</div>
+            </div>
+        </div>
+
+        <!-- Matches -->
+        {% for match in competition.matches %}
+        <div class="match-card {% if match.is_live %}is-live{% endif %}" onclick="viewMatch('{{ match.id }}')">
+            <div class="match-top">
+                <span class="match-group">{{ match.group_label }}</span>
+                <button class="match-star-btn is-active"
+                        onclick="event.stopPropagation(); toggleFav('{{ match.id }}')"
+                        data-match-id="{{ match.id }}">
+                    <i class="bi bi-star-fill"></i>
+                </button>
+            </div>
+
+            <div class="team-row">
+                <span class="time-label {% if match.is_live %}is-live{% endif %}">{{ match.time_label }}</span>
+                <div class="team-info">
+                    <div class="team-crest">?</div>
+                    <span class="team-name">{{ match.team1_name }}</span>
+                </div>
+                <span class="score-box">{{ match.team1_score }}</span>
+            </div>
+
+            <div class="team-row">
+                <span class="time-label"></span>
+                <div class="team-info">
+                    <div class="team-crest">?</div>
+                    <span class="team-name">{{ match.team2_name }}</span>
+                </div>
+                <span class="score-box">{{ match.team2_score }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-star"></i>
+        <div class="empty-state-title">No favorites yet</div>
+        <div class="empty-state-text">Star matches to see them here</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+// Live Native Calendar Selection Sync Engine
+document.getElementById('hiddenCalendarPicker')?.addEventListener('change', function (e) {
+    const selectedDate = e.target.value;
+    if (selectedDate) {
+        window.location.href = `?date=${selectedDate}`;
+    }
+});
+
+// Dynamic Tab State Segment Handler
+window.switchTab = function(button, tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('is-active'));
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('is-active'));
+
+    button.classList.add('is-active');
+    document.getElementById(tabId)?.classList.add('is-active');
+};
+
+// Toggle Star Matrix Favorite Engine Hook
+window.toggleFav = function(fixtureId) {
+    const btn = document.querySelector(`[data-match-id="${fixtureId}"]`);
+    if (!btn) return;
+    const icon = btn.querySelector('i');
+
+    btn.classList.toggle('is-active');
+    if (icon) {
+        icon.className = btn.classList.contains('is-active') ? 'bi bi-star-fill' : 'bi bi-star';
+    }
+
+    fetch('{% url "toggle-favorite" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({fixture_id: fixtureId})
+    })
+    .then(r => r.json())
+    .catch(err => console.error('Error Syncing Matrix:', err));
+};
+
+// View Detail Redirect Logic Router
+window.viewMatch = function(fixtureId) {
+    window.location.href = `/match/${fixtureId}/`;
+};
+
+// Auto-Scroll Center Initialization Loop Execution
+document.addEventListener('DOMContentLoaded', () => {
+    const activeDateChip = document.querySelector('.date-chip-base.active');
+    if (activeDateChip) {
+        setTimeout(() => {
+            activeDateChip.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }, 150);
+    }
+});
+{% endblock extra_js %}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070708">
+    <meta name="description" content="PitchMasters - Professional PES Esports Tournament Platform">
+    <title>PitchMasters</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #070708;
+            --surface-color: rgba(255, 255, 255, 0.02);
+            --border-color: rgba(255, 255, 255, 0.05);
+            /* Refined Premium Sport Orange Palette */
+            --accent-orange: #FF6B35;
+            --accent-gradient: linear-gradient(135deg, #FF6B35 0%, #D85A30 100%);
+            --text-primary: #FFFFFF;
+            --text-secondary: #8A8F98;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+        }
+
+        /* Ambient Premium Background with Orange Core Glow */
+        body {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 48%, rgba(255, 107, 53, 0.06) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, #0f0f12 0%, #070708 100%);
+            animation: pageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Subtle Background Grid Overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            pointer-events: none;
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        /* Elegant Brand Typography */
+        .text-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 7vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text-primary);
+            line-height: 1.1;
+            background: linear-gradient(to bottom, #FFFFFF 45%, #B3B3B3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        /* Premium TM Alignment styling */
+        .trademark {
+            font-size: 0.35em;
+            font-weight: 500;
+            letter-spacing: normal;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-left: 0.15em;
+            margin-top: -0.1em;
+            user-select: none;
+        }
+
+        /* Sleek Modern Glass Spinner Core */
+        .spinner-enclosure {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.05);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(255, 255, 255, 0.03);
+            border-top-color: var(--accent-orange);
+            border-right-color: var(--accent-orange);
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Accessibility Systems */
+        @media (prefers-reduced-motion: reduce) {
+            .page, body {
+                animation: none !important;
+            }
+
+            .spinner {
+                animation: spin 2.5s linear infinite;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="get-started-page" class="page">
+    <div class="container">
+        <div class="text-wrapper">
+            <h1 class="title">PitchMasters<span class="trademark">™</span></h1>
+        </div>
+
+        <div class="spinner-enclosure">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    let deviceUuid ;
+    function generateUUID() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+
+    function fadeOutAndRedirect(targetUrl) {
+        setTimeout(() => {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 400);
+        }, 1200);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const STORAGE_KEY = 'pitchmasters_device_uuid';
+        deviceUuid = localStorage.getItem(STORAGE_KEY);
+
+        if (!deviceUuid) {
+            deviceUuid = generateUUID();
+            localStorage.setItem(STORAGE_KEY, deviceUuid);
+
+            fadeOutAndRedirect('/client/get_started/');
+        } else {
+            console.log('Returning user recognized. Synching configuration...');
+            try {
+                const response = await fetch(`/api/user-setup?uuid=${deviceUuid}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Assuming your backend sends something like: { favoriteTeams: [...], favoriteTournaments: [...] }
+                    // You can pin this directly to sessionStorage for real-time client use
+                    sessionStorage.setItem('user_preferences', JSON.stringify(data));
+                }
+            } catch (error) {
+                console.error('Failed to sync data gracefully with server:', error);
+                // Fail silently or handle offline mode routing if required
+            }
+
+            // Route directly to main production interface dashboard
+            fadeOutAndRedirect('/app');
+        }
+    });
+
+    if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Scope verification initialized: Production build active.');
+    }
+</script>
+</body>
+</html>

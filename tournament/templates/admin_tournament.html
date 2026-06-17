@@ -1,0 +1,245 @@
+{% extends 'admin_dashboard_base.html' %}
+
+{% block content %}
+<main class="main-content">
+
+  <!-- COOL FUNCTIONALITY: Workspace Context Switcher Dropdown -->
+  <div style="margin-bottom: 20px; background: #060608; border: 1px solid var(--border-grey); padding: 12px; border-radius: 12px;">
+    <label class="sheet-label" style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+      <i class="bi bi-layers-half" style="color: var(--brand-orange)"></i> Active Workspace Pipeline
+    </label>
+    <div style="position: relative;">
+      <select class="sheet-control"
+              style="appearance: none; -webkit-appearance: none; padding-right: 40px; font-weight: 700; background-color: #000; border-color: var(--border-grey); background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%2371717a\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'><path fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/></svg>'); background-repeat: no-repeat; background-position: calc(100% - 16px) center; background-size: 12px;"
+              onchange="if(this.value) window.location.href='/admin-workspace/tournament/' + this.value + '/';">
+        {% for t in tournament_list %}
+          <option value="{{ t.id }}" {% if t.id == tournament.id %}selected{% endif %}>{{ t.name }}</option>
+        {% empty %}
+          <option value="{{ tournament.id }}" selected>{{ tournament.name|default:"PitchMasters Pro League" }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <!-- Tournament Header Context Frame -->
+  <div style="margin-bottom: 24px; padding: 0 4px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+      <h1 style="font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: #fff;">{{ tournament.name|default:"PitchMasters Pro League" }}</h1>
+      <span class="t-badge" style="background: rgba(218, 90, 48, 0.1); border-color: rgba(218, 90, 48, 0.3); font-size: 9px; letter-spacing: 0.05em;">{{ tournament.status|default:"IN PROGRESS" }}</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; align-items: center; font-weight: 500;">
+      <span><i class="bi bi-trophy" style="color: #a1a1aa;"></i> {{ tournament.format|title|default:"League" }}</span>
+      <i class="bi bi-dot" style="color: var(--border-grey); font-size: 16px;"></i>
+      <span><i class="bi bi-shield" style="color: #a1a1aa;"></i> {{ tournament.teams_count|default:"8" }} Teams Registered</span>
+    </div>
+  </div>
+
+  <!-- Segmented Hub Navigation Tab Bar Controls -->
+  <div style="display: flex; background: #0c0c0e; border: 1px solid var(--border-grey); padding: 4px; border-radius: 10px; margin-bottom: 24px;">
+    <button class="inline-btn tab-trigger" style="flex: 1; background: var(--bg-card); border: none; height: 34px;" onclick="switchTab('standings-view')">Standings</button>
+    <button class="inline-btn tab-trigger" style="flex: 1; background: transparent; border: none; height: 34px; color: var(--text-muted);" onclick="switchTab('fixtures-view')">Fixtures</button>
+    <button class="inline-btn tab-trigger" style="flex: 1; background: transparent; border: none; height: 34px; color: var(--text-muted);" onclick="switchTab('config-view')">Config</button>
+  </div>
+
+  <!-- TAB SUB-CONTAINER 1: LIVE STANDINGS TABLE MATRIX -->
+  <div id="standings-view" class="tab-content-panel">
+    <h2 class="section-title">Current Table Standings</h2>
+    <div style="background: var(--bg-card); border: 1px solid var(--border-grey); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-grey); color: var(--text-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; background: #050505;">
+            <th style="padding: 14px 16px; width: 40px;">#</th>
+            <th style="padding: 14px 0;">Club</th>
+            <th style="padding: 14px 8px; text-align: center; width: 40px;">P</th>
+            <th style="padding: 14px 8px; text-align: center; width: 50px;">GD</th>
+            <th style="padding: 14px 16px; text-align: right; width: 60px;">PTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in standings %}
+          <tr style="border-bottom: 1px solid #141416; transition: background 0.2s;" onmouseover="this.style.background='#111113'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 14px 16px; color: var(--text-muted); font-weight: 700;">{{ forloop.counter }}</td>
+            <td style="padding: 14px 0; font-weight: 700; letter-spacing: -0.01em; color: #f4f4f5;">{{ entry.team.name }}</td>
+            <td style="padding: 14px 8px; text-align: center; color: #a1a1aa;">{{ entry.played }}</td>
+            <td style="padding: 14px 8px; text-align: center; font-weight: 600; color: {% if entry.goal_difference > 0 %}#22c55e{% elif entry.goal_difference < 0 %}#ef4444{% else %}var(--text-muted){% endif %};">
+              {% if entry.goal_difference > 0 %}+{% endif %}{{ entry.goal_difference }}
+            </td>
+            <td style="padding: 14px 16px; text-align: right; font-weight: 800; color: var(--brand-orange); font-size: 14px;">{{ entry.points }}</td>
+          </tr>
+          {% empty %}
+          <!-- Premium Static Fallbacks with form layout accents -->
+          <tr style="border-bottom: 1px solid #141416;">
+            <td style="padding: 14px 16px; color: var(--text-muted); font-weight: 700;">1</td>
+            <td style="padding: 14px 0; font-weight: 700; color: #f4f4f5;">Nairobi Athletic</td>
+            <td style="padding: 14px 8px; text-align: center; color: #a1a1aa;">3</td>
+            <td style="padding: 14px 8px; text-align: center; color: #22c55e; font-weight: 600;">+5</td>
+            <td style="padding: 14px 16px; text-align: right; font-weight: 800; color: var(--brand-orange); font-size: 14px;">9</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #141416;">
+            <td style="padding: 14px 16px; color: var(--text-muted); font-weight: 700;">2</td>
+            <td style="padding: 14px 0; font-weight: 700; color: #f4f4f5;">Kilimani City FC</td>
+            <td style="padding: 14px 8px; text-align: center; color: #a1a1aa;">3</td>
+            <td style="padding: 14px 8px; text-align: center; color: #ef4444; font-weight: 600;">-2</td>
+            <td style="padding: 14px 16px; text-align: right; font-weight: 800; color: var(--brand-orange); font-size: 14px;">4</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB SUB-CONTAINER 2: FIXTURES TIMELINE AND LOGGING FRAME -->
+  <div id="fixtures-view" class="tab-content-panel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2 class="section-title" style="margin: 0;">Match Schedule</h2>
+      <span style="font-size: 11px; font-weight: 700; color: var(--brand-orange); cursor: pointer;" onclick="openSheet('tournamentSheet')"><i class="bi bi-plus-circle-fill"></i> Add Fixture</span>
+    </div>
+
+    <!-- COOL FUNCTIONALITY: Dynamic Real-time Client-side Search Engine Filter -->
+    <div style="position: relative; margin-bottom: 16px;">
+      <i class="bi bi-search" style="position: absolute; left: 14px; top: 13px; color: var(--text-muted); font-size: 14px;"></i>
+      <input type="text" id="fixtureSearch" onkeyup="filterFixturesEngine()" placeholder="Filter fixtures by team franchises..." class="sheet-control" style="padding-left: 40px; background: #09090b; height: 40px; font-size: 12px;">
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;" id="fixturesWrapperList">
+      {% for fixture in fixtures_list %}
+      <div class="feed-item fixture-search-node" data-teams="{{ fixture.home_team.name|lower }} {{ fixture.away_team.name|lower }}" style="flex-direction: column; align-items: stretch; gap: 12px; padding: 16px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-weight: 600;">
+          <span style="letter-spacing: 0.02em; text-transform: uppercase;">MATCHDAY {{ fixture.round_number|default:"1" }}</span>
+          <span style="color: #a1a1aa;"><i class="bi bi-clock-history"></i> {{ fixture.kickoff_time|default:"Scheduled" }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 14px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; width: 65%;">
+            <span style="display: flex; justify-content: space-between; color: #e4e4e7;">{{ fixture.home_team.name }} <strong style="color: #fff; font-size: 15px;">{{ fixture.home_score|default:"-" }}</strong></span>
+            <span style="display: flex; justify-content: space-between; color: #e4e4e7;">{{ fixture.away_team.name }} <strong style="color: #fff; font-size: 15px;">{{ fixture.away_score|default:"-" }}</strong></span>
+          </div>
+          <div>
+            <button class="inline-btn" style="height: 32px; padding: 0 14px; font-size: 11px; border-color: var(--border-grey);" onclick="launchScoreLogger('{{ fixture.id }}', '{{ fixture.home_team.name }}', '{{ fixture.away_team.name }}')">
+              <i class="bi bi-pencil-square" style="color: var(--brand-orange)"></i> Log Score
+            </button>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="feed-item" style="justify-content: center; color: var(--text-muted); font-size: 13px; padding: 32px; text-align: center;">
+        <div>
+          <i class="bi bi-calendar-x" style="font-size: 24px; color: var(--border-grey); display: block; margin-bottom: 8px;"></i>
+          No fixtures compiled for this operational loop block.
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- TAB SUB-CONTAINER 3: MANAGEMENT CONFIGURATION PANELS -->
+  <div id="config-view" class="tab-content-panel" style="display: none;">
+    <h2 class="section-title">Engine Directives</h2>
+    <div style="background: var(--bg-card); border: 1px solid var(--border-grey); border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+      <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff;">Recalculate Tournament Parameters</h4>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">Wipes active points matrices and structural loops to re-verify total score input parity across database index registers.</p>
+      <button class="inline-btn" style="width: 100%; border-color: rgba(218, 90, 48, 0.3); color: var(--brand-orange); height: 40px;" onclick="syncStandingsTable('{{ tournament.id }}')">
+        <i class="bi bi-arrow-clockwise"></i> Re-Index Operations Table
+      </button>
+    </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--border-grey); border-radius: 12px; padding: 16px;">
+      <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #ef4444;">Danger Zone</h4>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">Permanently terminates records, matches, and metadata variables associated with this tournament asset entity context.</p>
+      <button class="inline-btn" style="width: 100%; background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2); color: #ef4444; height: 40px;" onclick="terminateCompetition('{{ tournament.id }}')">
+        <i class="bi bi-trash3-fill"></i> Delete Competition Sequence
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Dynamic Score Logger Injection Form Overlay Slip-Up Sheet -->
+<div class="bottom-sheet" id="scoreLogSheet">
+  <div class="sheet-handle"></div>
+  <h3 class="sheet-title" id="scoreSheetTitle">Update Match Record</h3>
+  <form id="logScoreForm" method="POST" action="/admin-workspace/fixtures/update-score/">
+    {% csrf_token %}
+    <input type="hidden" name="fixture_id" id="logFixtureId">
+
+    <div class="sheet-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div>
+        <label class="sheet-label" id="homeLabel">Home Score</label>
+        <input type="number" name="home_score" class="sheet-control" min="0" placeholder="0" required>
+      </div>
+      <div>
+        <label class="sheet-label" id="awayLabel">Away Score</label>
+        <input type="number" name="away_score" class="sheet-control" min="0" placeholder="0" required>
+      </div>
+    </div>
+
+    <div class="sheet-group">
+      <label class="sheet-label">Match Progression Status</label>
+      <select name="status" class="sheet-control">
+        <option value="FT">Full Time (FT)</option>
+        <option value="LIVE">Live Play Loop</option>
+        <option value="AET">After Extra Time (AET)</option>
+      </select>
+    </div>
+
+    <button type="submit" class="sheet-btn">Commit Score Matrix</button>
+  </form>
+</div>
+
+<script>
+/* --- Tab Switching Engine Mechanics --- */
+function switchTab(targetTabId) {
+  document.querySelectorAll('.tab-content-panel').forEach(panel => panel.style.display = 'none');
+  document.getElementById(targetTabId).style.display = 'block';
+
+  const buttons = event.currentTarget.parentNode.querySelectorAll('.tab-trigger');
+  buttons.forEach(btn => {
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--text-muted)';
+  });
+  event.currentTarget.style.background = 'var(--bg-card)';
+  event.currentTarget.style.color = '#f4f4f5';
+}
+
+/* --- COOL FUNCTIONALITY: Client-Side Live Filter Search Optimization --- */
+function filterFixturesEngine() {
+  const query = document.getElementById('fixtureSearch').value.toLowerCase();
+  const targets = document.querySelectorAll('.fixture-search-node');
+
+  targets.forEach(node => {
+    const teamMetadata = node.getAttribute('data-teams');
+    if(teamMetadata.includes(query)) {
+      node.style.display = 'flex';
+    } else {
+      node.style.display = 'none';
+    }
+  });
+}
+
+/* --- Contextual Scoring Sheet Interceptor Trigger --- */
+function launchScoreLogger(fixtureId, homeName, awayName) {
+  document.getElementById('logFixtureId').value = fixtureId;
+  document.getElementById('scoreSheetTitle').textContent = "Update Match Record";
+  document.getElementById('homeLabel').textContent = homeName + " Score";
+  document.getElementById('awayLabel').textContent = awayName + " Score";
+  openSheet('scoreLogSheet');
+}
+
+/* --- Destructive Destruction Action Trigger --- */
+function terminateCompetition(tournamentId) {
+  if (confirm("Critical Request: Are you completely certain you want to purge all metadata matrices for this competition instance? This action is irreversible.")) {
+    fetch('/admin-workspace/tournament/' + tournamentId + '/delete/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) window.location.href = '/admin-workspace/hub/';
+      else alert("Deletion blocked: " + data.message);
+    });
+  }
+}
+
+// Wire the Score Logger form runtime interception payload pipeline smoothly
+wireAsyncForm('logScoreForm', '/admin-workspace/fixtures/update-score/', 'Commit Score Matrix');
+</script>
+{% endblock %}

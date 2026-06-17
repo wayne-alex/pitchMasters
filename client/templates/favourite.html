@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070708">
+    <title>Configure Arena - PitchMasters</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #070708;
+            --surface: rgba(255, 255, 255, 0.02);
+            --surface-hover: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.05);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --accent: #FF6B35;
+            --accent-gradient: linear-gradient(135deg, #FF6B35 0%, #D85A30 100%);
+            --text-main: #FFFFFF;
+            --text-muted: #6C727F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% -20%, rgba(255, 107, 53, 0.07) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 120%, rgba(216, 90, 48, 0.03) 0%, transparent 50%), #070708;
+        }
+
+        .wrapper {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 3rem 2rem 2rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .step-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(to bottom, #FFFFFF 60%, #A3A3A3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .viewport {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .viewport::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .viewport::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .matrix-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .see-all-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .see-all-btn:hover {
+            opacity: 0.8;
+        }
+
+        .grid-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .tile {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tile:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .tile-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .tile-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.75;
+        }
+
+        .tile-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .tile-meta {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .tile.selected {
+            background: rgba(255, 107, 53, 0.03);
+            border-color: var(--accent);
+            box-shadow: 0 0 24px rgba(255, 107, 53, 0.08);
+        }
+
+        .tile.selected .tile-icon {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            color: #FFFFFF;
+        }
+
+        .indicator-dot {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s ease;
+        }
+
+        .tile.selected .indicator-dot {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .action-panel {
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .prime-btn {
+            background: var(--accent-gradient);
+            color: #000000;
+            border: none;
+            padding: 0.875rem 2.25rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .prime-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(216, 90, 48, 0.3);
+        }
+
+        .prime-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+        }
+
+        /* Modal Section View Elements */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 7, 8, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            background: #0f0f12;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 750px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .modal-close {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        /* Utility class to isolate modal toggle blocks */
+        .u-hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .wrapper { padding: 2rem 1.25rem 1.25rem; }
+            .grid-matrix { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">
+        <span class="step-tag">Configuration Engine</span>
+        <h1>Select Arena Favorites</h1>
+    </div>
+
+    <div class="viewport">
+
+        {% if tournaments %}
+        <div class="matrix-section">
+            <div class="section-header-row">
+                <div class="section-header">Tournaments</div>
+                {% if tournaments|length > 5 %}
+                    <button class="see-all-btn" onclick="toggleModal('tournaments', true)">See All</button>
+                {% endif %}
+            </div>
+            <div class="grid-matrix">
+                {% for tournament in tournaments|slice:":5" %}
+                <div class="tile" data-type="tournament" data-id="{{ tournament.id }}" onclick="handleTileClick(this)">
+                    <div class="indicator-dot"></div>
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    </div>
+                    <div class="tile-name">{{ tournament.name }}</div>
+                    <div class="tile-meta">{{ tournament.category }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if teams %}
+        <div class="matrix-section">
+            <div class="section-header-row">
+                <div class="section-header">Teams</div>
+                {% if teams|length > 5 %}
+                    <button class="see-all-btn" onclick="toggleModal('teams', true)">See All</button>
+                {% endif %}
+            </div>
+            <div class="grid-matrix">
+                {% for team in teams|slice:":5" %}
+                <div class="tile" data-type="team" data-id="{{ team.id }}" onclick="handleTileClick(this)">
+                    <div class="indicator-dot"></div>
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div class="tile-name">{{ team.name }}</div>
+                    <div class="tile-meta">Player: {{ team.player_name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="action-panel">
+        <button id="saveBtn" class="prime-btn">
+            <span>Save & Continue</span>
+            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">All Elements</div>
+            <button class="modal-close" onclick="toggleModal('', false)">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <div id="modal-tournaments-view" class="u-hidden">
+                <div class="grid-matrix">
+                    {% for tournament in tournaments %}
+                    <div class="tile" data-type="tournament" data-id="{{ tournament.id }}" onclick="handleTileClick(this)">
+                        <div class="indicator-dot"></div>
+                        <div class="tile-icon">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                        </div>
+                        <div class="tile-name">{{ tournament.name }}</div>
+                        <div class="tile-meta">{{ tournament.category }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div id="modal-teams-view" class="u-hidden">
+                <div class="grid-matrix">
+                    {% for team in teams %}
+                    <div class="tile" data-type="team" data-id="{{ team.id }}" onclick="handleTileClick(this)">
+                        <div class="indicator-dot"></div>
+                        <div class="tile-icon">
+                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div class="tile-name">{{ team.name }}</div>
+                        <div class="tile-meta">Player: {{ team.player_name }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // State Tracking Arrays
+    let selectedTournaments = [];
+    let selectedTeams = [];
+
+    function handleTileClick(tileElement) {
+        const id = tileElement.getAttribute('data-id');
+        const type = tileElement.getAttribute('data-type');
+        const targetArray = (type === 'tournament') ? selectedTournaments : selectedTeams;
+
+        const index = targetArray.indexOf(id);
+        if (index > -1) {
+            targetArray.splice(index, 1);
+        } else {
+            targetArray.push(id);
+        }
+
+        // Find all matching tiles across view boundaries and toggle active visual classes
+        document.querySelectorAll(`.tile[data-id="${id}"]`).forEach(el => {
+            el.classList.toggle('selected');
+        });
+    }
+
+    // Controls Section Modal Overlay Toggles
+    function toggleModal(sectionType, shouldOpen) {
+        const overlay = document.getElementById('modalOverlay');
+        const tView = document.getElementById('modal-tournaments-view');
+        const teamView = document.getElementById('modal-teams-view');
+        const title = document.getElementById('modalTitle');
+
+        if (!shouldOpen) {
+            overlay.classList.remove('active');
+            return;
+        }
+
+        // Setup structural layout state viewing configuration properties
+        if (sectionType === 'tournaments') {
+            title.innerText = "All Available Tournaments";
+            tView.classList.remove('u-hidden');
+            teamView.classList.add('u-hidden');
+        } else {
+            title.innerText = "All Available Teams";
+            teamView.classList.remove('u-hidden');
+            tView.classList.add('u-hidden');
+        }
+
+        overlay.classList.add('active');
+    }
+
+    // Submission Logic
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const deviceUuid = localStorage.getItem('pitchmasters_device_uuid');
+
+        const payload = {
+            device_uuid: deviceUuid,
+            tournaments: selectedTournaments,
+            teams: selectedTeams
+        };
+
+        try {
+            const response = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                window.location.href = '/client/match/';
+            } else {
+                alert("Error synchronizing settings parameters.");
+            }
+        } catch(e) {
+            console.error("Transmission error:", e);
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>

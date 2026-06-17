@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>PitchMasters HQ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --orange: #D85A30;
+            --orange-dim: rgba(216, 90, 48, 0.12);
+            --orange-glow: rgba(216, 90, 48, 0.08);
+            --border: #1f1f22;
+            --border-light: #2a2a2e;
+            --bg: #000000;
+            --bg-card: #0a0a0c;
+            --bg-elevated: #111114;
+            --bg-hover: #161619;
+            --text: #f0f0f2;
+            --text-sub: #a0a0a8;
+            --text-muted: #56565e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── App Shell ── */
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-top: calc(64px + env(safe-area-inset-top, 0px));
+            padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* ── Top Bar ── */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: calc(64px + env(safe-area-inset-top, 0px));
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-end;
+            padding: 0 16px calc(12px) 16px;
+            z-index: 100;
+        }
+
+        .top-bar-inner {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* Brand */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .brand-mark {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: var(--orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-mark::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+
+        .brand-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.03em;
+        }
+
+        .brand-role {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--orange);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* User Pill */
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-light);
+            border-radius: 100px;
+            padding: 4px 4px 4px 10px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            position: relative;
+        }
+
+        .user-pill:hover {
+            border-color: var(--border-light);
+            background: var(--bg-hover);
+        }
+
+        .user-pill:hover .user-dropdown {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--orange-dim);
+            border: 1px solid rgba(216, 90, 48, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--orange);
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        /* Dropdown */
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 200px;
+            background: #111114;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+
+        .dropdown-header {
+            padding: 10px 10px 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 4px;
+        }
+
+        .dropdown-header-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .dropdown-header-email {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-sub);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.12s, color 0.12s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        .dropdown-item i {
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .dropdown-item.logout {
+            color: #ef4444;
+            margin-top: 2px;
+            border-top: 1px solid var(--border);
+            border-radius: 0 0 7px 7px;
+            padding-top: 10px;
+            margin-top: 4px;
+        }
+
+        .dropdown-item.logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            flex: 1;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+
+        /* ── Section Labels ── */
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            margin: 28px 0 12px 0;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* ── Metric Cards ── */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--orange-dim), transparent);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .metric-header i {
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-size: 26px;
+            font-weight: 800;
+            margin-top: 10px;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        /* ── Action Tiles ── */
+        .actions-matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-tile {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.15s;
+        }
+
+        .action-tile:active {
+            background: var(--bg-hover);
+            border-color: var(--orange);
+            transform: scale(0.98);
+        }
+
+        .action-tile i {
+            font-size: 22px;
+            color: var(--orange);
+        }
+
+        .action-tile span {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* ── Tournament Cards ── */
+        .tournament-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 10px;
+            transition: border-color 0.15s;
+        }
+
+        .tournament-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .t-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .t-title {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .t-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .t-badge {
+            background: var(--orange-dim);
+            border: 1px solid rgba(216, 90, 48, 0.2);
+            color: var(--orange);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
+        }
+
+        .t-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        .inline-btn {
+            height: 36px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-sub);
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.12s, border-color 0.12s, color 0.12s;
+            font-family: inherit;
+        }
+
+        .inline-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+            color: var(--text);
+        }
+
+        /* ── Team Cards ── */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .team-mini-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: border-color 0.12s;
+        }
+
+        .team-mini-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .team-accent {
+            width: 4px;
+            height: 28px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .team-details {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .team-name-label {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team-venue-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ── Live Feed ── */
+        .live-feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .feed-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .match-teams {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .tournament-tag {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .live-ticker {
+            background: var(--orange-glow);
+            border: 1px solid rgba(216, 90, 48, 0.2);
+            color: var(--orange);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .pulse-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--orange);
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.25;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ── Bottom Sheets (base) ── */
+        .sheet-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 190;
+            display: none;
+        }
+
+        .sheet-overlay.open {
+            display: block;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0e0e11;
+            border-top: 1px solid var(--border-light);
+            border-radius: 20px 20px 0 0;
+            z-index: 200;
+            padding: 28px 20px;
+            padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 640px;
+            margin: 0 auto;
+            box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .bottom-sheet.open {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            margin: -16px auto 22px;
+        }
+
+        .sheet-title {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        /* Sheet form controls */
+        .sheet-group {
+            margin-bottom: 14px;
+        }
+
+        .sheet-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 7px;
+        }
+
+        .sheet-control {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            height: 46px;
+            padding: 0 13px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .sheet-control:focus {
+            border-color: var(--orange);
+        }
+
+        .sheet-btn {
+            width: 100%;
+            background: var(--orange);
+            color: #fff;
+            font-weight: 800;
+            font-size: 14px;
+            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            height: 50px;
+            margin-top: 12px;
+            cursor: pointer;
+            letter-spacing: -0.01em;
+            transition: opacity 0.15s;
+        }
+
+        .sheet-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sheet-btn:active {
+            opacity: 0.8;
+        }
+
+        /* ── Bottom Nav ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(60px + env(safe-area-inset-bottom, 0px));
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .nav-container {
+            width: 100%;
+            max-width: 640px;
+            display: flex;
+            height: 60px;
+            padding: 0 8px;
+        }
+
+        .nav-link {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border-radius: 10px;
+            transition: color 0.15s, background 0.15s;
+            position: relative;
+        }
+
+        .nav-link.active {
+            color: var(--orange);
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            width: 20px;
+            height: 2px;
+            background: var(--orange);
+            border-radius: 1px;
+        }
+
+        .nav-link i {
+            font-size: 19px;
+        }
+
+        /* ── Logout Confirmation Sheet ── */
+        .logout-sheet-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+            padding-bottom: 4px;
+        }
+
+        .logout-icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #ef4444;
+            margin-bottom: 8px;
+        }
+
+        .logout-title {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .logout-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 260px;
+            margin: 0 auto 16px;
+        }
+
+        .btn-danger {
+            width: 100%;
+            height: 50px;
+            background: #ef4444;
+            color: #fff;
+            font-weight: 800;
+            font-size: 14px;
+            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            margin-bottom: 8px;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.88;
+        }
+
+        .btn-ghost {
+            width: 100%;
+            height: 46px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-light);
+            color: var(--text-sub);
+            font-weight: 600;
+            font-size: 13px;
+            font-family: inherit;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        /* ── User Info Bar (inside sheet) ── */
+        .user-info-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+        }
+
+        .user-info-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--orange-dim);
+            border: 1px solid rgba(216, 90, 48, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--orange);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .user-info-details {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .user-info-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info-email {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info-badge {
+            margin-left: auto;
+            background: var(--orange-dim);
+            border: 1px solid rgba(216, 90, 48, 0.2);
+            color: var(--orange);
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- ── Top Bar ── -->
+    <header class="top-bar">
+        <div class="top-bar-inner">
+
+            <!-- Brand -->
+            <div class="brand">
+                <div class="brand-mark">PM</div>
+                <div class="brand-text">
+                    <span class="brand-name">PitchMasters</span>
+                    <span class="brand-role">Admin</span>
+                </div>
+            </div>
+
+            <!-- User Pill with Dropdown -->
+            <div class="user-pill" tabindex="0" role="button" aria-label="User menu">
+                <span class="user-name">{{ request.user.get_short_name|default:request.user.username }}</span>
+                <div class="user-avatar">
+                    {{ request.user.username|slice:":1" }}
+                </div>
+
+                <!-- Dropdown -->
+                <div class="user-dropdown" role="menu">
+                    <div class="dropdown-header">
+                        <div class="dropdown-header-name">{{ request.user.get_full_name|default:request.user.username
+                            }}
+                        </div>
+                        <div class="dropdown-header-email">{{ request.user.email }}</div>
+                    </div>
+                    <a href="{% url 'adminSystemView' %}" class="dropdown-item" role="menuitem">
+                        <i class="bi bi-sliders"></i> System Settings
+                    </a>
+                    <a href="{% url 'adminAuditLogsView' %}" class="dropdown-item" role="menuitem">
+                        <i class="bi bi-clock-history"></i> Audit Logs
+                    </a>
+                    <button class="dropdown-item logout" role="menuitem" onclick="openLogoutSheet()">
+                        <i class="bi bi-box-arrow-right"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ── Page Content ── -->
+    {% block content %}{% endblock %}
+
+    <!-- ── Bottom Nav ── -->
+    <nav class="bottom-nav" aria-label="Main navigation">
+        <div class="nav-container">
+            <a href="{% url 'adminDashboardView' %}" class="nav-link" aria-label="Hub">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Hub</span>
+            </a>
+            <a href="{% url 'adminAuditLogsView' %}" class="nav-link" aria-label="Audit Logs">
+                <i class="bi bi-clock-history"></i>
+                <span>Logs</span>
+            </a>
+            <a href="{% url 'adminSystemView' %}" class="nav-link" aria-label="System">
+                <i class="bi bi-sliders"></i>
+                <span>System</span>
+            </a>
+        </div>
+    </nav>
+
+</div>
+
+<!-- ── Overlays ── -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeAllSheets()"></div>
+
+<!-- Tournament Sheet -->
+<div class="bottom-sheet" id="tournamentSheet">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title" id="tournamentSheetTitle">Create Tournament</h3>
+    <form id="createTournamentForm" method="POST" action="/tournament/create/">
+        {% csrf_token %}
+        <div class="sheet-group">
+            <label class="sheet-label">Tournament Name</label>
+            <input type="text" name="name" class="sheet-control" placeholder="e.g., PitchMasters Pro Cup" required>
+        </div>
+        <div class="sheet-group">
+            <label class="sheet-label">Format</label>
+            <select name="format" class="sheet-control">
+                <option value="league">League (Round-Robin)</option>
+                <option value="group_and_knockout">Group Stage</option>
+                <option value="knockout">Knockout Bracket</option>
+                <option value="uefa_league_phase">UEFA League Phase</option>
+            </select>
+        </div>
+        <div class="sheet-group">
+            <label class="sheet-label">Leg Mode</label>
+            <select name="mode" class="sheet-control">
+                <option value="single">Single Leg</option>
+                <option value="two_legged">Two-Legged (Home & Away)</option>
+            </select>
+        </div>
+        <button type="submit" class="sheet-btn" id="tournamentSheetBtn">Create Tournament</button>
+    </form>
+</div>
+
+<!-- Team Sheet -->
+<div class="bottom-sheet" id="teamSheet">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title" id="teamSheetTitle">Register Team</h3>
+    <form id="createTeamForm" method="POST" action="/tournament/team/add/">
+        {% csrf_token %}
+        <div class="sheet-group">
+            <label class="sheet-label">Tournament</label>
+            <select name="tournament_id" class="sheet-control" required>
+                <option value="" disabled selected>Select a tournament…</option>
+                {% for tournament in tournament_list %}
+                <option value="{{ tournament.id }}">{{ tournament.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="sheet-group">
+            <label class="sheet-label">Team Name</label>
+            <input type="text" name="team_name" class="sheet-control" placeholder="e.g., Chelsea" required>
+        </div>
+        <div class="sheet-group">
+            <label class="sheet-label">Player Name</label>
+            <input type="text" name="player_name" class="sheet-control" placeholder="e.g., Wayne">
+        </div>
+        <button type="submit" class="sheet-btn" id="teamSheetBtn">Register Team</button>
+    </form>
+</div>
+
+<!-- Delete Confirmation Sheet -->
+<div class="bottom-sheet" id="deleteConfirmationSheet">
+    <div class="sheet-handle"></div>
+    <div style="text-align:center; margin-bottom:20px;">
+        <div style="width:52px;height:52px;border-radius:14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;color:#ef4444;">
+            <i class="bi bi-trash3"></i>
+        </div>
+        <h3 style="font-size:17px;font-weight:800;margin-bottom:6px;letter-spacing:-0.02em;">Delete Permanently?</h3>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.5;">
+            <strong id="deleteTargetName" style="color:var(--text);">[Object]</strong> will be removed from the database
+            and cannot be recovered.
+        </p>
+    </div>
+    <form id="deleteConfirmationForm" method="POST" action="">
+        {% csrf_token %}
+        <button type="submit" class="sheet-btn" style="background:#ef4444;margin-bottom:8px;">
+            Yes, Delete
+        </button>
+        <button type="button" class="btn-ghost" onclick="closeAllSheets()">Cancel</button>
+    </form>
+</div>
+
+<!-- Logout Confirmation Sheet -->
+<div class="bottom-sheet" id="logoutSheet">
+    <div class="sheet-handle"></div>
+
+    <!-- Shows who's signed in -->
+    <div class="user-info-card">
+        <div class="user-info-avatar">{{ request.user.username|slice:":1" }}</div>
+        <div class="user-info-details">
+            <div class="user-info-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="user-info-email">{{ request.user.email }}</div>
+        </div>
+        <div class="user-info-badge">Admin</div>
+    </div>
+
+    <div class="logout-sheet-body">
+        <div class="logout-icon-wrap"><i class="bi bi-box-arrow-right"></i></div>
+        <div class="logout-title">Sign out?</div>
+        <p class="logout-sub">You'll need to sign back in to access the admin workspace.</p>
+    </div>
+
+    <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Sign Out</button>
+        <button type="button" class="btn-ghost" onclick="closeAllSheets()">Stay Signed In</button>
+    </form>
+</div>
+
+<script>
+    /* ── Sheet System ── */
+    function openSheet(sheetId) {
+        document.getElementById('sheetOverlay').classList.add('open');
+        document.getElementById(sheetId).classList.add('open');
+    }
+
+    function closeAllSheets() {
+        document.getElementById('sheetOverlay').classList.remove('open');
+        document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('open'));
+    }
+
+    function openLogoutSheet() {
+        closeAllSheets();
+        // Small delay so dropdown close doesn't fight the sheet open
+        setTimeout(() => openSheet('logoutSheet'), 50);
+    }
+
+    /* ── Tournament Sheet Helpers ── */
+    function openCreateTournamentSheet() {
+        const form = document.getElementById('createTournamentForm');
+        form.reset();
+        form.setAttribute('action', '/tournament/create/');
+        document.getElementById('tournamentSheetTitle').textContent = "Create Tournament";
+        document.getElementById('tournamentSheetBtn').textContent = "Create Tournament";
+        openSheet('tournamentSheet');
+    }
+
+    function openEditTournamentSheet(id, name, format, mode) {
+        const form = document.getElementById('createTournamentForm');
+        form.reset();
+        form.setAttribute('action', `/tournament/${id}/edit/`);
+        document.getElementById('tournamentSheetTitle').textContent = "Edit Tournament";
+        document.getElementById('tournamentSheetBtn').textContent = "Save Changes";
+        form.querySelector('[name="name"]').value = name;
+        form.querySelector('[name="format"]').value = format;
+        form.querySelector('[name="mode"]').value = mode;
+        openSheet('tournamentSheet');
+    }
+
+    /* ── Team Sheet Helpers ── */
+    function openCreateTeamSheet() {
+        const form = document.getElementById('createTeamForm');
+        form.reset();
+        form.setAttribute('action', '/tournament/team/add/');
+        document.getElementById('teamSheetTitle').textContent = "Register Team";
+        document.getElementById('teamSheetBtn').textContent = "Register Team";
+        openSheet('teamSheet');
+    }
+
+    function openEditTeamSheet(id, tournamentId, teamName, playerName) {
+        const form = document.getElementById('createTeamForm');
+        form.reset();
+        form.setAttribute('action', `/tournament/team/${id}/edit/`);
+        document.getElementById('teamSheetTitle').textContent = "Edit Team";
+        document.getElementById('teamSheetBtn').textContent = "Save Changes";
+        form.querySelector('[name="tournament_id"]').value = tournamentId;
+        form.querySelector('[name="team_name"]').value = teamName;
+        form.querySelector('[name="player_name"]').value = playerName;
+        openSheet('teamSheet');
+    }
+
+    /* ── Delete Sheet Helper ── */
+    function openDeleteSheet(endpoint, itemName) {
+        const form = document.getElementById('deleteConfirmationForm');
+        form.reset();
+        form.setAttribute('action', endpoint);
+        document.getElementById('deleteTargetName').textContent = itemName;
+        openSheet('deleteConfirmationSheet');
+    }
+
+    /* ── Async Form Wiring ── */
+    function wireAsyncForm(formId, loadingLabel) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = form.querySelector('.sheet-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = loadingLabel || 'Saving…';
+
+            fetch(form.getAttribute('action'), {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value}
+            })
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    if (data.success) {
+                        closeAllSheets();
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Something went wrong.');
+                    }
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    alert('Network error. Please try again.');
+                });
+        });
+    }
+
+    wireAsyncForm('createTournamentForm', 'Saving…');
+    wireAsyncForm('createTeamForm', 'Saving…');
+    wireAsyncForm('deleteConfirmationForm', 'Deleting…');
+
+    /* ── Active Nav Link ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        const links = document.querySelectorAll('.bottom-nav .nav-link');
+        links.forEach(l => l.classList.remove('active'));
+
+        let matched = false;
+        links.forEach(link => {
+            if (link.getAttribute('href') === '#') return;
+            if (window.location.href === link.href ||
+                (window.location.href.startsWith(link.href) && link.href !== window.location.origin + '/')) {
+                link.classList.add('active');
+                matched = true;
+            }
+        });
+
+        if (!matched && links.length) links[0].classList.add('active');
+
+        /* Keyboard accessibility for user pill */
+        const pill = document.querySelector('.user-pill');
+        if (pill) {
+            pill.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    pill.classList.toggle('focus-open');
+                    const dropdown = pill.querySelector('.user-dropdown');
+                    if (dropdown) {
+                        const isOpen = dropdown.style.opacity === '1';
+                        dropdown.style.opacity = isOpen ? '' : '1';
+                        dropdown.style.pointerEvents = isOpen ? '' : 'auto';
+                        dropdown.style.transform = isOpen ? '' : 'translateY(0)';
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

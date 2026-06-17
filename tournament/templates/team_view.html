@@ -1,0 +1,735 @@
+{% extends 'admin_dashboard_base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --o:#da5a30; --o-dim:rgba(218,90,48,.1);
+        --g:#4ade80; --g-dim:rgba(74,222,128,.08);
+        --r:#ef4444; --r-dim:rgba(239,68,68,.08);
+        --b:#818cf8; --b-dim:rgba(129,140,248,.1);
+        --z1:#09090b; --z2:#0d0d0f; --z3:#18181b;
+        --z4:#27272a; --z5:#3f3f46; --z6:#52525b;
+        --z7:#71717a; --z8:#a1a1aa; --z9:#e4e4e7; --zw:#f4f4f5;
+    }
+
+    /* ── Header ── */
+    .t-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--z4);
+        gap: 12px;
+    }
+    .t-header h2 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--zw);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 55vw;
+    }
+    .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+    .pill {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+    .pill-green  { background: var(--g-dim); color: var(--g); border: 1px solid rgba(74,222,128,.2); }
+    .pill-orange { background: var(--o-dim); color: var(--o); border: 1px solid rgba(218,90,48,.2); }
+    .pill-grey   { background: var(--z4); color: var(--z8); border: 1px solid var(--z5); }
+    .meta-txt    { font-size: 11px; color: var(--z7); }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        padding: 14px 16px;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        border-radius: 0 0 10px 10px;
+    }
+    .stat-card.pts::after   { background: var(--o); }
+    .stat-card.wins::after  { background: var(--g); }
+    .stat-card.gd::after    { background: var(--b); }
+    .stat-card.pl::after    { background: var(--z5); }
+    .stat-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--z7);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 6px;
+    }
+    .stat-value {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--zw);
+        line-height: 1;
+        font-family: 'Courier New', monospace;
+    }
+    .stat-card.pts .stat-value  { color: var(--o); }
+    .stat-card.wins .stat-value { color: var(--g); }
+    .stat-card.gd .stat-value   { color: var(--b); }
+    .stat-sub { font-size: 10px; color: var(--z6); margin-top: 4px; }
+
+    /* ── Performance Section ── */
+    .form-section {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+    .form-title { font-size: 11px; font-weight: 700; color: var(--z7); text-transform: uppercase; letter-spacing: .5px; }
+    .wdl-bar-wrap {
+        flex: 1;
+        height: 8px;
+        background: var(--z4);
+        border-radius: 4px;
+        overflow: hidden;
+        display: flex;
+        margin-bottom: 10px;
+    }
+    .wdl-seg { height: 100%; }
+    .wdl-seg.w { background: var(--g); }
+    .wdl-seg.d { background: var(--z6); }
+    .wdl-seg.l { background: var(--r); }
+    .wdl-legend { display: flex; gap: 16px; }
+    .wdl-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--z8); }
+    .wdl-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .wdl-count { font-weight: 700; color: var(--zw); }
+    .goal-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--z4);
+    }
+    .goal-col  { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .goal-bar  { width: 36px; border-radius: 4px 4px 0 0; min-height: 4px; }
+    .goal-bar.gf { background: var(--g); }
+    .goal-bar.ga { background: var(--r); }
+    .goal-bar-label { font-size: 9px; color: var(--z7); text-transform: uppercase; }
+    .goal-bar-val   { font-size: 12px; font-weight: 700; }
+    .goal-bar-val.gf { color: var(--g); }
+    .goal-bar-val.ga { color: var(--r); }
+    .goal-diff-block { margin-left: auto; text-align: right; }
+    .goal-diff-val   { font-size: 24px; font-weight: 800; font-family: monospace; }
+    .goal-diff-label { font-size: 10px; color: var(--z7); text-transform: uppercase; }
+
+    /* ── Controls Grid ── */
+    .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+    .control-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        padding: 16px;
+        cursor: pointer;
+        transition: transform .15s, border-color .15s;
+    }
+    .control-card:hover { transform: translateY(-2px); border-color: var(--o); }
+    .ctrl-icon {
+        width: 36px; height: 36px;
+        border-radius: 7px;
+        background: var(--z4);
+        color: var(--zw);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        margin-bottom: 10px;
+        transition: background .15s, color .15s;
+    }
+    .control-card:hover .ctrl-icon { background: var(--o); color: #fff; }
+    .control-card h4 { margin: 0 0 2px; font-size: 12px; font-weight: 700; color: var(--zw); }
+    .control-card p  { margin: 0; font-size: 11px; color: var(--z7); line-height: 1.4; }
+
+    /* ── Fixtures ── */
+    .sec-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+    .sec-title { font-size: 12px; font-weight: 700; color: var(--z7); text-transform: uppercase; letter-spacing: .5px; }
+    .filter-tabs { display: flex; gap: 6px; }
+    .ftab {
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid var(--z4);
+        background: transparent;
+        color: var(--z7);
+        cursor: pointer;
+        transition: all .15s;
+    }
+    .ftab.active, .ftab:hover { background: var(--o); border-color: var(--o); color: #fff; }
+
+    .dg { margin-bottom: 16px; }
+    .dg-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .dg-label { font-size: 10px; font-weight: 700; color: var(--z6); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    .dg-line  { flex: 1; height: 1px; background: var(--z4); }
+    .dg-count { font-size: 10px; color: var(--z6); white-space: nowrap; }
+
+    .fx-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 9px;
+        margin-bottom: 7px;
+        overflow: hidden;
+        transition: border-color .15s;
+    }
+    .fx-card:hover    { border-color: var(--z5); }
+    .fx-card.won      { border-left: 3px solid var(--g); }
+    .fx-card.draw     { border-left: 3px solid var(--z6); }
+    .fx-card.lost     { border-left: 3px solid var(--r); }
+    .fx-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px 12px;
+        background: var(--z1);
+        border-bottom: 1px solid var(--z2);
+    }
+    .fx-round       { font-size: 9px; font-weight: 700; color: var(--z6); text-transform: uppercase; letter-spacing: .4px; }
+    .fx-status-ft   { font-size: 9px; font-weight: 700; color: var(--o); letter-spacing: .5px; }
+    .fx-status-sched { font-size: 9px; color: var(--z6); }
+    .fx-body {
+        display: grid;
+        grid-template-columns: 1fr 88px 1fr;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 12px;
+    }
+    .fx-team       { font-size: 13px; font-weight: 600; color: var(--zw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+    .fx-team.home  { text-align: right; }
+    .fx-team.this-team { color: var(--o); font-weight: 800; }
+    .fx-country    { font-size: 10px; color: var(--z6); }
+    .fx-country.home { text-align: right; }
+    .fx-score {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        background: var(--z1);
+        border: 1px solid var(--z4);
+        border-radius: 7px;
+        padding: 7px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 17px;
+        font-weight: 800;
+    }
+    .fx-score.played { color: var(--o); }
+    .fx-score .vs  { font-size: 9px; color: var(--z6); font-family: system-ui; letter-spacing: 1px; }
+    .fx-score .sep { color: var(--z5); font-size: 12px; }
+    .outcome {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+    .outcome.W { background: var(--g-dim); color: var(--g); }
+    .outcome.D { background: var(--z4); color: var(--z8); }
+    .outcome.L { background: var(--r-dim); color: var(--r); }
+
+    .empty {
+        padding: 40px;
+        text-align: center;
+        background: var(--z3);
+        border: 1px dashed var(--z4);
+        border-radius: 10px;
+        color: var(--z6);
+        font-size: 12px;
+    }
+    .empty i       { font-size: 30px; color: var(--z5); display: block; margin-bottom: 10px; }
+    .empty strong  { display: block; color: var(--z8); margin-bottom: 4px; }
+
+    /* ── Local Bottom Sheets (isolated from base template) ── */
+    .local-backdrop {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(5, 5, 6, 0.75);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 900;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s ease-in-out;
+    }
+    .local-backdrop.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .local-sheet {
+        position: fixed;
+        bottom: -100%; left: 0; right: 0;
+        background: #18181b;
+        border-top: 1px solid var(--z4);
+        border-radius: 20px 20px 0 0;
+        padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+        z-index: 950;
+        box-shadow: 0 -10px 30px -5px rgba(0, 0, 0, 0.85);
+        box-sizing: border-box;
+        transition: bottom .3s cubic-bezier(0.16, 1, 0.3, 1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .local-sheet.show { bottom: 0; }
+
+    .sheet-handle-bar {
+        width: 40px; height: 4px;
+        background: var(--z5);
+        border-radius: 2px;
+        margin: 0 auto 20px;
+    }
+    .sheet-heading {
+        margin: 0 0 4px;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--zw);
+    }
+    .sheet-sub {
+        margin: 0 0 20px;
+        font-size: 12px;
+        color: var(--z7);
+    }
+    .sheet-label  { display: block; font-size: 11px; font-weight: 600; color: var(--z8); text-transform: uppercase; margin-bottom: 6px; }
+    .sheet-input,
+    .sheet-select {
+        width: 100%; height: 44px;
+        background: var(--z1);
+        border: 1px solid var(--z4);
+        border-radius: 8px;
+        padding: 0 12px;
+        color: var(--zw);
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color .15s;
+    }
+    .sheet-input:focus,
+    .sheet-select:focus { border-color: var(--o); }
+    .sheet-row    { margin-bottom: 16px; }
+    .sheet-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .sheet-submit {
+        width: 100%; height: 46px;
+        background: var(--o);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 4px;
+        transition: opacity .15s;
+    }
+    .sheet-submit:hover   { opacity: .9; }
+    .sheet-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Back button reuse */
+    .inline-btn {
+        height: 38px;
+        background: #121214;
+        border: 1px solid var(--z4);
+        color: var(--z8);
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        padding: 0 14px;
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+        .stats-grid { grid-template-columns: 1fr 1fr; }
+        .fx-body    { grid-template-columns: 1fr 72px 1fr; padding: 9px 10px; }
+    }
+    @media (max-width: 380px) {
+        .stats-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<main class="main-content">
+
+    <!-- ── Header ── -->
+    <div class="t-header">
+        <div>
+            <h2>{{ team.name }}</h2>
+            <div class="meta-row">
+                <span class="pill pill-green">{{ tournament.name }}</span>
+                {% if team_group %}<span class="pill pill-orange">{{ team_group.name }}</span>{% endif %}
+                {% if team.country %}<span class="pill pill-grey">{{ team.country }}</span>{% endif %}
+                <span class="meta-txt"><i class="bi bi-person-badge"></i> {{ team.player_name }}</span>
+                {% if team.founded_year %}<span class="meta-txt">Est. {{ team.founded_year }}</span>{% endif %}
+            </div>
+        </div>
+        <button class="inline-btn" onclick="window.location.href='/tournament/admin_dashboard/'">
+            <i class="bi bi-arrow-left"></i> Back
+        </button>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-grid">
+        <div class="stat-card pts">
+            <div class="stat-label">Points</div>
+            <div class="stat-value">{{ stats.points }}</div>
+            <div class="stat-sub">3 per win · 1 per draw</div>
+        </div>
+        <div class="stat-card wins">
+            <div class="stat-label">Record</div>
+            <div class="stat-value">{{ stats.wins }}<span style="font-size:14px;color:var(--z6);">W</span></div>
+            <div class="stat-sub">{{ stats.draws }}D &nbsp; {{ stats.losses }}L</div>
+        </div>
+        <div class="stat-card gd">
+            <div class="stat-label">Goal Diff</div>
+            <div class="stat-value">{% if stats.goal_diff > 0 %}+{% endif %}{{ stats.goal_diff }}</div>
+            <div class="stat-sub">{{ stats.goals_for }} scored · {{ stats.goals_against }} conceded</div>
+        </div>
+        <div class="stat-card pl">
+            <div class="stat-label">Played</div>
+            <div class="stat-value">{{ stats.played }}</div>
+            <div class="stat-sub">of {{ fixtures|length }} scheduled</div>
+        </div>
+    </div>
+
+    <!-- ── Performance Breakdown ── -->
+    {% if stats.played > 0 %}
+    <div class="form-section">
+        <div class="form-header">
+            <span class="form-title">Performance Breakdown</span>
+            <span style="font-size:11px;color:var(--g);font-weight:700;">{{ stats.win_pct }}% win rate</span>
+        </div>
+        <div class="wdl-bar-wrap">
+            <div class="wdl-seg w" style="width:{{ stats.win_pct }}%"></div>
+            <div class="wdl-seg d" style="width:{{ stats.draw_pct }}%"></div>
+            <div class="wdl-seg l" style="width:{{ stats.loss_pct }}%"></div>
+        </div>
+        <div class="wdl-legend">
+            <div class="wdl-item"><div class="wdl-dot" style="background:var(--g);"></div><span class="wdl-count">{{ stats.wins }}</span> Won</div>
+            <div class="wdl-item"><div class="wdl-dot" style="background:var(--z6);"></div><span class="wdl-count">{{ stats.draws }}</span> Drawn</div>
+            <div class="wdl-item"><div class="wdl-dot" style="background:var(--r);"></div><span class="wdl-count">{{ stats.losses }}</span> Lost</div>
+        </div>
+        <div class="goal-row">
+            <div class="goal-col">
+                <div class="goal-bar-val gf">{{ stats.goals_for }}</div>
+                <div class="goal-bar gf" style="height:{{ stats.goals_for }}px; max-height:40px;"></div>
+                <div class="goal-bar-label">Scored</div>
+            </div>
+            <div class="goal-col">
+                <div class="goal-bar-val ga">{{ stats.goals_against }}</div>
+                <div class="goal-bar ga" style="height:{{ stats.goals_against }}px; max-height:40px;"></div>
+                <div class="goal-bar-label">Conceded</div>
+            </div>
+            <div class="goal-diff-block">
+                <div class="goal-diff-val" style="color:{% if stats.goal_diff >= 0 %}var(--g){% else %}var(--r){% endif %};">
+                    {% if stats.goal_diff > 0 %}+{% endif %}{{ stats.goal_diff }}
+                </div>
+                <div class="goal-diff-label">Goal diff</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Controls ── -->
+    <div class="controls-grid">
+        <!-- Edit Team — always visible -->
+        <div class="control-card" onclick="openLocalSheet('editTeamSheet')">
+            <div class="ctrl-icon"><i class="bi bi-pencil-square"></i></div>
+            <h4>Edit Team</h4>
+            <p>Update name, player, country, and founding year.</p>
+        </div>
+
+        <!-- Assign / Change Group — only shown when groups exist for this tournament -->
+        {% if all_groups %}
+        <div class="control-card" onclick="openLocalSheet('groupAssignmentSheet')">
+            <div class="ctrl-icon"><i class="bi bi-diagram-3"></i></div>
+            <h4>{% if team_group %}Change Group{% else %}Assign Group{% endif %}</h4>
+            <p>{% if team_group %}Move this team to a different group.{% else %}Add this team to a group.{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Fixtures ── -->
+    <div class="sec-head">
+        <span class="sec-title">Fixtures</span>
+        {% if fixtures %}
+        <div class="filter-tabs">
+            <button class="ftab active" onclick="filterFx('all', this)">All</button>
+            <button class="ftab" onclick="filterFx('played', this)">Played</button>
+            <button class="ftab" onclick="filterFx('pending', this)">Pending</button>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="fxList">
+        {% if fixtures %}
+            {% regroup fixtures by match_date as date_groups %}
+            {% for dg in date_groups %}
+            <div class="dg">
+                <div class="dg-head">
+                    <span class="dg-label">{% if dg.grouper %}{{ dg.grouper|date:"D, d M Y" }}{% else %}Date TBD{% endif %}</span>
+                    <div class="dg-line"></div>
+                    <span class="dg-count">{{ dg.list|length }} match{{ dg.list|length|pluralize:"es" }}</span>
+                </div>
+
+                {% for match in dg.list %}
+                <div class="fx-card
+                    {% if match.outcome == 'W' %}won
+                    {% elif match.outcome == 'D' %}draw
+                    {% elif match.outcome == 'L' %}lost{% endif %}"
+                     data-status="{{ match.status }}">
+
+                    <div class="fx-meta">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="fx-round">Round {{ match.round }}</span>
+                            {% if match.group %}
+                            <span class="pill pill-orange" style="font-size:8px;padding:1px 5px;">{{ match.group.name }}</span>
+                            {% endif %}
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            {% if match.is_played %}
+                                {% if match.outcome %}<span class="outcome {{ match.outcome }}">{{ match.outcome }}</span>{% endif %}
+                                <span class="fx-status-ft">FT</span>
+                            {% else %}
+                                <span class="fx-status-sched"><i class="bi bi-clock"></i> Scheduled</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="fx-body">
+                        <div>
+                            <div class="fx-team home {% if match.home_team_id == team.id %}this-team{% endif %}">{{ match.home_team.name }}</div>
+                            <div class="fx-country home">{{ match.home_team.country }}</div>
+                        </div>
+                        <div class="fx-score {% if match.is_played %}played{% endif %}">
+                            {% if match.is_played %}
+                                <span>{{ match.home_score }}</span>
+                                <span class="sep">-</span>
+                                <span>{{ match.away_score }}</span>
+                            {% else %}
+                                <span class="vs">VS</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="fx-team {% if match.away_team_id == team.id %}this-team{% endif %}">{{ match.away_team.name }}</div>
+                            <div class="fx-country">{{ match.away_team.country }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty">
+            <i class="bi bi-calendar2-x"></i>
+            <strong>No fixtures yet</strong>
+            Generate fixtures from the tournament dashboard.
+        </div>
+        {% endif %}
+    </div>
+
+</main>
+
+<!-- ── Local Backdrop (isolated from base template's #sheetOverlay) ── -->
+<div id="localBackdrop" class="local-backdrop" onclick="closeLocalSheets()"></div>
+
+<!-- ── Edit Team Sheet ── -->
+<div id="editTeamSheet" class="local-sheet">
+    <div class="sheet-handle-bar"></div>
+    <h3 class="sheet-heading">Edit Team</h3>
+    <p class="sheet-sub">Changes save immediately.</p>
+    <form id="editTeamForm" method="POST" action="/tournament/teams/{{ team.id }}/update/">
+        {% csrf_token %}
+        <div class="sheet-row">
+            <label class="sheet-label">Team Name</label>
+            <input type="text" name="name" value="{{ team.name }}" required class="sheet-input">
+        </div>
+        <div class="sheet-row">
+            <label class="sheet-label">Player / Controller</label>
+            <input type="text" name="player_name" value="{{ team.player_name }}" required class="sheet-input" maxlength="10">
+        </div>
+        <div class="sheet-grid-2">
+            <div class="sheet-row">
+                <label class="sheet-label">Country</label>
+                <input type="text" name="country" value="{{ team.country }}" class="sheet-input">
+            </div>
+            <div class="sheet-row">
+                <label class="sheet-label">Founded</label>
+                <input type="number" name="founded_year" value="{{ team.founded_year }}" class="sheet-input">
+            </div>
+        </div>
+        <button type="submit" class="sheet-submit" id="editTeamBtn">Save Changes</button>
+    </form>
+</div>
+
+<!-- ── Group Assignment Sheet (only rendered when groups exist) ── -->
+{% if all_groups %}
+<div id="groupAssignmentSheet" class="local-sheet">
+    <div class="sheet-handle-bar"></div>
+    <h3 class="sheet-heading">{% if team_group %}Change Group{% else %}Assign Group{% endif %}</h3>
+    <p class="sheet-sub">{% if team_group %}Move this team into a different group.{% else %}Add this team to a group.{% endif %}</p>
+    <form id="groupAssignmentForm" method="POST" action="/tournament/teams/{{ team.id }}/assign-group/">
+        {% csrf_token %}
+        <div class="sheet-row">
+            <label class="sheet-label">Group</label>
+            <select name="group_id" class="sheet-select">
+                <option value="" {% if not team_group %}selected{% endif %}>No group (standalone)</option>
+                {% for g in all_groups %}
+                <option value="{{ g.id }}" {% if team_group.id == g.id %}selected{% endif %}>{{ g.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="sheet-submit" id="groupAssignmentBtn"
+                style="background:var(--z4);border:1px solid var(--z5);">
+            Save Group
+        </button>
+    </form>
+</div>
+{% endif %}
+
+<script>
+    /* ────────────────────────────────────────────
+       LOCAL SHEET SYSTEM
+       Uses #localBackdrop + .local-sheet classes,
+       completely separate from the base template's
+       #sheetOverlay + .bottom-sheet system.
+    ──────────────────────────────────────────── */
+
+    function openLocalSheet(id) {
+        // Close any already-open local sheet first
+        document.querySelectorAll('.local-sheet').forEach(s => s.classList.remove('show'));
+
+        const sheet   = document.getElementById(id);
+        const backdrop = document.getElementById('localBackdrop');
+
+        if (sheet && backdrop) {
+            sheet.classList.add('show');
+            backdrop.classList.add('show');
+        }
+    }
+
+    function closeLocalSheets() {
+        document.querySelectorAll('.local-sheet').forEach(s => s.classList.remove('show'));
+        const backdrop = document.getElementById('localBackdrop');
+        if (backdrop) backdrop.classList.remove('show');
+    }
+
+    /* ────────────────────────────────────────────
+       ASYNC FORM HANDLER (local, self-contained)
+    ──────────────────────────────────────────── */
+
+    function wireLocalForm(formId, btnId, defaultLabel) {
+        const form = document.getElementById(formId);
+        const btn  = document.getElementById(btnId);
+        if (!form || !btn) return;
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            btn.disabled    = true;
+            btn.textContent = 'Saving…';
+
+            fetch(form.action, {
+                method:  'POST',
+                body:    new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(res => {
+                if (!res.ok) return res.json().then(d => { throw new Error(d.message || 'Server error'); });
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    closeLocalSheets();
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+            })
+            .catch(err => {
+                alert('Error: ' + err.message);
+            })
+            .finally(() => {
+                btn.disabled    = false;
+                btn.textContent = defaultLabel;
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        wireLocalForm('editTeamForm',        'editTeamBtn',        'Save Changes');
+        wireLocalForm('groupAssignmentForm', 'groupAssignmentBtn', 'Save Group');
+    });
+
+    /* ────────────────────────────────────────────
+       FIXTURE FILTER
+    ──────────────────────────────────────────── */
+
+    function filterFx(status, btn) {
+        document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.fx-card').forEach(card => {
+            const played = card.dataset.status === 'played';
+            if (status === 'all')    card.style.display = '';
+            else if (status === 'played')  card.style.display = played  ? '' : 'none';
+            else                           card.style.display = !played ? '' : 'none';
+        });
+
+        // Hide date groups that have no visible matches
+        document.querySelectorAll('.dg').forEach(dg => {
+            const anyVisible = [...dg.querySelectorAll('.fx-card')].some(c => c.style.display !== 'none');
+            dg.style.display = anyVisible ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

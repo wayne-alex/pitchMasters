@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>{% block title %}PitchMasters - Pro Sports Platform{% endblock title %}</title>
+
+  <!-- Global Icon Matrix Stack Dependency -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :root {
+      --brand-orange: #FF6B35;
+      --brand-blue: #0066FF;
+      --live-red: #EF4444;
+      --border-grey: #18181b;
+      --border-grey-light: #27272a;
+      --bg-card: #09090b;
+      --text-main: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-muted: #52525b;
+    }
+
+    body {
+      background:#000000;
+      color:var(--text-main);
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+      font-size:13px;
+      line-height:1.4;
+      padding-bottom:90px;
+      letter-spacing:-0.01em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Floating Viewport Mechanics */
+    .sticky-header { position:sticky; top:0; z-index:200; background:rgba(0,0,0,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+
+    .top-nav {
+      display:flex; align-items:center; gap:8px;
+      padding:12px 16px; border-bottom:1px solid var(--border-grey);
+    }
+    .nav-icon-btn {
+      background:transparent; border:1px solid var(--border-grey);
+      color:var(--text-secondary); font-size:14px; width:32px; height:32px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .2s cubic-bezier(0.16, 1, 0.3, 1); border-radius:8px;
+    }
+    .nav-icon-btn:hover { color:#fff; border-color:var(--border-grey-light); background:rgba(255,255,255,0.03); }
+    .nav-icon-btn.active { background:var(--brand-orange); color:#000; border-color:transparent; }
+    .nav-separator { width:1px; height:18px; background:var(--border-grey); margin:0 4px; }
+
+    /* Matrix Live Filtering Engine Controls */
+    .search-container {
+      display: none; padding: 10px 16px; background: #000; border-bottom: 1px solid var(--border-grey);
+    }
+    .search-container.active { display: block; }
+    .search-wrapper { position: relative; display: flex; align-items: center; }
+    .search-input {
+      width: 100%; background: var(--bg-card); border: 1px solid var(--border-grey);
+      padding: 8px 12px 8px 34px; border-radius: 8px; color: #fff; font-size: 13px; outline: none;
+    }
+    .search-input:focus { border-color: var(--border-grey-light); }
+    .search-wrapper i { position: absolute; left: 12px; color: var(--text-muted); }
+
+    .team-slider {
+      display:flex; align-items:center; gap:8px;
+      overflow-x:auto; scrollbar-width:none; margin-left:4px; flex:1;
+    }
+    .team-slider::-webkit-scrollbar { display:none; }
+    .slider-item {
+      display:flex; align-items:center; gap:8px;
+      background:var(--bg-card); border:1px solid var(--border-grey);
+      border-radius:24px; padding:4px 12px 4px 6px;
+      cursor:pointer; transition:all .2s; white-space:nowrap;
+    }
+    .slider-item:hover { border-color:var(--text-muted); background:rgba(255,255,255,0.01); }
+
+    /* Custom Platform Emblem Logos */
+    .custom-badge-logo {
+      width: 38px; height: 38px; border-radius: 50%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; background: #0c0c0e; border: 1px solid var(--border-grey);
+      flex-shrink: 0; line-height: 0.95; gap: 1px;
+    }
+    .custom-badge-logo.slider-scale { width: 24px; height: 24px; gap: 0px; }
+    .logo-txt-top { font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: -0.04em; }
+    .slider-scale .logo-txt-top { font-size: 8px; }
+    .logo-txt-bottom { font-size: 12px; font-weight: 800; color: transparent; -webkit-text-stroke: 1px var(--text-muted); text-transform: uppercase; letter-spacing: -0.04em; }
+    .slider-scale .logo-txt-bottom { font-size: 8px; -webkit-text-stroke: 0.5px var(--text-muted); }
+    .slider-name { font-size:11px; font-weight:600; color:var(--text-secondary); }
+
+    /* Date Controller Bar Shared UI Placement rules */
+    .date-strip-wrapper { display:flex; align-items:center; background:#000; padding:10px 16px; border-bottom:1px solid var(--border-grey); gap:12px; }
+    .static-date-btn {
+      background:var(--bg-card); border:1px solid var(--border-grey); border-radius:8px;
+      height:34px; padding:0 14px; display:flex; align-items:center; justify-content:center;
+      color:var(--text-main); font-weight:700; cursor:pointer; font-size:11px; white-space:nowrap; transition:all .2s; gap:6px;
+    }
+    .static-date-btn.live-accent { color:var(--text-secondary); }
+    .static-date-btn.live-accent.filtering { color:#fff; background: rgba(239, 68, 68, 0.1); border-color: var(--live-red); }
+    .static-date-btn.live-accent i { font-size:6px; color: var(--text-muted); }
+    .static-date-btn.live-accent.filtering i { color: var(--live-red); animation: pulse 1.5s infinite; }
+
+    .date-scroll-center {
+      display:flex; align-items:center; gap:4px; overflow-x:auto; flex:1; scrollbar-width:none; justify-content:space-between;
+    }
+    .date-chip-base {
+      background:transparent; border:none; display:flex; flex-direction:column; padding:4px 8px;
+      align-items:center; cursor:pointer; transition:all .2s; border-radius:6px; min-width:46px; text-decoration:none;
+    }
+    .date-chip-base .day { font-size:9px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px; }
+    .date-chip-base .num { font-size:12px; font-weight:700; color:var(--text-secondary); }
+    .date-chip-base.active { background: var(--bg-card); border:1px solid var(--border-grey); }
+    .date-chip-base.active .num { color:var(--brand-orange); }
+
+    /* Main Container Shell */
+    .content { padding:16px; max-width:650px; margin:0 auto; }
+
+    /* Common Shared UI Presentation Styles */
+    .placeholder-view { text-align:center; padding:44px 16px; color:var(--text-secondary); border:1px dashed var(--border-grey); border-radius:12px; background:var(--bg-card); }
+    .placeholder-view i { font-size:26px; margin-bottom:8px; display:block; color:var(--border-grey-light); }
+
+    @keyframes pulse { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
+
+    /* Navigation Dock Footer */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; right:0;
+      background:rgba(0,0,0,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      border-top:1px solid var(--border-grey); display:flex; justify-content:space-around;
+      padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px)); z-index:200;
+    }
+    .bottom-link {
+      background:none; border:none; display:flex; flex-direction:column;
+      align-items:center; gap:4px; font-size:11px; font-weight:500;
+      color:var(--text-secondary); cursor:pointer; transition:color .2s; width:64px; text-decoration:none;
+    }
+    .bottom-link i { font-size:18px; }
+    .bottom-link.active { color:var(--brand-orange); font-weight:600; }
+
+    /* Custom native calendar picker overlay */
+    .calendar-input-overlay {
+      position: absolute; opacity: 0; width: 34px; height: 34px; cursor: pointer; pointer-events: auto;
+    }
+
+    {% block extra_css %}{% endblock extra_css %}
+  </style>
+</head>
+<body>
+
+<div class="sticky-header" id="masterHeader">
+  <div class="top-nav">
+    {% block top_nav_left %}
+    <button class="nav-icon-btn" id="menuBtn"><i class="bi bi-three-dots-vertical"></i></button>
+    {% endblock top_nav_left %}
+
+    <button class="nav-icon-btn" id="searchBtn"><i class="bi bi-search"></i></button>
+    <div class="nav-separator"></div>
+    <button class="nav-icon-btn" id="addBtn"><i class="bi bi-plus-lg"></i></button>
+
+    <div class="team-slider">
+      <div class="slider-item">
+        <div class="custom-badge-logo slider-scale"><span class="logo-txt-top">WC</span><span class="logo-txt-bottom">26</span></div>
+        <span class="slider-name">World Cup</span>
+      </div>
+      <div class="slider-item">
+        <div class="custom-badge-logo slider-scale"><span class="logo-txt-top">PM</span><span class="logo-txt-bottom">IN</span></div>
+        <span class="slider-name">PES Masters</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Match Filtering Engine Bar -->
+  <div class="search-container" id="searchBarContainer">
+    <div class="search-wrapper">
+      <i class="bi bi-search"></i>
+      <input type="text" class="search-input" id="dashboardSearchInput" placeholder="Search parameters...">
+    </div>
+  </div>
+
+  <!-- The Date Strip block container has been removed from default base layout view -->
+  {% block date_strip_container %}{% endblock date_strip_container %}
+</div>
+
+<!-- Main Application Template Context Frame -->
+<div class="content">
+  {% block content %}{% endblock content %}
+</div>
+
+<!-- Global Navigation Fixed Layout Dock -->
+<div class="bottom-nav">
+  <a href="{% url 'matches' %}" class="bottom-link {% if request.resolver_match.url_name == 'matches' %}active{% endif %}">
+    <i class="bi bi-lightning-charge-fill"></i><span>Matches</span>
+  </a>
+  <a href="{% url 'feed' %}" class="bottom-link {% if request.resolver_match.url_name == 'feed' %}active{% endif %}">
+    <i class="bi bi-activity"></i><span>Feed</span>
+  </a>
+  <a href="{% url 'favorites' %}" class="bottom-link {% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">
+    <i class="bi bi-star"></i><span>Stars</span>
+  </a>
+  <a href="{% url 'news' %}" class="bottom-link {% if request.resolver_match.url_name == 'news' %}active{% endif %}">
+    <i class="bi bi-newspaper"></i><span>News</span>
+  </a>
+</div>
+
+<!-- Essential UI Control Interactions Scripts -->
+<script>
+  document.getElementById('searchBtn')?.addEventListener('click', function() {
+    this.classList.toggle('active');
+    document.getElementById('searchBarContainer')?.classList.toggle('active');
+  });
+  {% block extra_js %}{% endblock extra_js %}
+</script>
+</body>
+</html>

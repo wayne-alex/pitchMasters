@@ -1,0 +1,270 @@
+{% extends 'admin_dashboard_base.html' %}
+
+{% block content %}
+<style>
+    .system-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .user-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-grey);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-profile-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        background: #27272a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a1a1aa;
+        font-size: 18px;
+    }
+
+    .user-meta h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #f4f4f5;
+    }
+
+    .user-meta p {
+        margin: 2px 0 0 0;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .role-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-top: 4px;
+        text-transform: uppercase;
+    }
+
+    .badge-admin {
+        background: rgba(218, 90, 48, 0.1);
+        color: var(--brand-orange);
+        border: 1px solid rgba(218, 90, 48, 0.2);
+    }
+
+    .badge-staff {
+        background: rgba(161, 161, 170, 0.1);
+        color: #a1a1aa;
+        border: 1px solid rgba(161, 161, 170, 0.2);
+    }
+
+    /* CRITICAL OVERRIDE: Forces the inline-styled bottom sheets to slide visible
+       when your base engine attaches the toggled structural activation states */
+    .bottom-sheet.active,
+    .bottom-sheet.show,
+    .bottom-sheet.open {
+        bottom: 0 !important;
+        transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+</style>
+
+<main class="main-content">
+
+    <div class="system-header-row">
+        <h2 class="section-title" style="margin-bottom: 0;">System Access Controls</h2>
+        <button type="button" class="action-btn" style="padding: 0 14px; height: 36px; font-size: 12px;"
+                onclick="openSheet('newUserSheet')">
+            <i class="bi bi-person-plus-fill"></i> New User
+        </button>
+    </div>
+
+    <div class="user-list-container">
+        {% for u in users %}
+        <div class="user-card">
+            <div class="user-profile-info">
+                <div class="avatar-placeholder">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="user-meta">
+                    <h4>{{ u.username }}</h4>
+                    <p>{{ u.email|default:"No verified system email connected" }}</p>
+
+                    {% if u.is_superuser %}
+                    <span class="role-badge badge-admin">Master Admin</span>
+                    {% else %}
+                    <span class="role-badge badge-staff">Operations Staff</span>
+                    {% endif %}
+                </div>
+            </div>
+
+
+            <div class="user-actions" style="display: flex; gap: 8px; align-items: center;">
+                {% if u.is_superuser %}
+                {% else %}
+                <button type="button" class="inline-btn"
+                        style="color: #f4f4f5; border-color: rgba(255, 255, 255, 0.15); padding: 6px 12px;"
+                        onclick="openEditUserSheet('/tournament/system/users/{{ u.id }}/edit/', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.role|default:'staff'|escapejs }}')">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </button>
+                {%endif %}
+
+                {% if u == request.user %}
+                <span style="font-size: 11px; color: var(--text-muted); font-style: italic; padding: 0 4px;">(You)</span>
+                {% elif u.is_superuser %}
+                <span style="font-size: 11px; color: #ef4444; font-style: italic; padding: 0 8px; border: 1px dashed rgba(239, 68, 68, 0.2); border-radius: 4px;">Immutable</span>
+                {% else %}
+                <button type="button" class="inline-btn"
+                        style="color: #ef4444; border-color: rgba(239, 68, 68, 0.15); padding: 6px 12px;"
+                        onclick="openDeleteSheet('/tournament/system/users/{{ u.id }}/delete/', 'User Context: {{ u.username|escapejs }}')">
+                    <i class="bi bi-trash"></i> Revoke
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</main>
+
+<div id="newUserSheet" class="bottom-sheet"
+     style="position: fixed; bottom: -100%; left: 0; right: 0; background: #18181b; border-top: 1px solid #27272a; border-radius: 20px 20px 0 0; padding: 20px; z-index: 1000; max-height: 85vh; overflow-y: auto; font-family: system-ui, -apple-system, sans-serif; box-sizing: border-box; transition: bottom 0.3s ease;">
+    <div style="width: 40px; height: 4px; background: #3f3f46; border-radius: 2px; margin: 0 auto 20px auto;"></div>
+    <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #f4f4f5;">Provision Access Credentials</h3>
+
+    <form id="newUserForm" method="POST" action="/tournament/system/users/create/">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Username
+                String</label>
+            <input type="text" name="username" placeholder="e.g., alex_ops" required
+                   style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Email
+                Interface Address</label>
+            <input type="email" name="email" placeholder="name@pitchmasters.com"
+                   style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Access
+                Clearance Level</label>
+            <select name="role"
+                    style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none; appearance: none; -webkit-appearance: none;">
+                <option value="staff" style="background: #18181b; color: #f4f4f5;">Operations Staff (Read/Write)
+                </option>
+                <option value="admin" style="background: #18181b; color: #f4f4f5;">Master Administrator (Full Purge
+                    Rights)
+                </option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Temporary
+                Account Password</label>
+            <input type="password" name="password" placeholder="••••••••••••" required
+                   style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <button type="submit" class="sheet-btn">
+           Create new User
+        </button>
+    </form>
+</div>
+
+<div id="editUserSheet" class="bottom-sheet"
+     style="position: fixed; bottom: -100%; left: 0; right: 0; background: #18181b; border-top: 1px solid #27272a; border-radius: 20px 20px 0 0; padding: 20px; z-index: 1000; max-height: 85vh; overflow-y: auto; font-family: system-ui, -apple-system, sans-serif; box-sizing: border-box; transition: bottom 0.3s ease;">
+    <div style="width: 40px; height: 4px; background: #3f3f46; border-radius: 2px; margin: 0 auto 20px auto;"></div>
+    <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #f4f4f5;">Modify Access Configurations</h3>
+
+    <form id="editUserForm" method="POST" action="">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Username
+                String</label>
+            <input type="text" name="username" required
+                   style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Email
+                Interface Address</label>
+            <input type="email" name="email"
+                   style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Access
+                Clearance Level</label>
+            <select name="role"
+                    style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none; appearance: none; -webkit-appearance: none;">
+                <option value="staff" style="background: #18181b; color: #f4f4f5;">Operations Staff (Read/Write)
+                </option>
+                <option value="admin" style="background: #18181b; color: #f4f4f5;">Master Administrator (Full Purge
+                    Rights)
+                </option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.5px;">Update
+                Password</label>
+            <span style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Leave blank to preserve current credentials</span>
+            <input type="password" name="password" placeholder="••••••••••••"
+                   style="width: 100%; height: 44px; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 14px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <button type="submit" class="sheet-btn">
+            Edit User
+        </button>
+    </form>
+</div>
+
+<script>
+    // Handles populating data fields contextually into the Edit User Sheet drawer
+    function openEditUserSheet(endpoint, username, email, role) {
+        const form = document.getElementById('editUserForm');
+        form.reset();
+
+        form.setAttribute('action', endpoint);
+        form.querySelector('input[name="username"]').value = username;
+        form.querySelector('input[name="email"]').value = email === "None" ? "" : email;
+        form.querySelector('select[name="role"]').value = role;
+
+        openSheet('editUserSheet');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Intercept both form engines for clean async processing toast loads
+        if (typeof wireAsyncForm === "function") {
+            wireAsyncForm('newUserForm', 'Configuring Server Access Keys...');
+            wireAsyncForm('editUserForm', 'Mutating User Credentials Context...');
+        }
+
+        // Pin bottom nav tab active highlights
+        const navLinks = document.querySelectorAll(".bottom-nav .nav-link");
+        navLinks.forEach(link => link.classList.remove("active"));
+        if (navLinks[3]) {
+            navLinks[3].classList.add("active");
+        }
+    });
+</script>
+{% endblock %}

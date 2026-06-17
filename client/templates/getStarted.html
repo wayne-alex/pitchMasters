@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070708">
+    <meta name="description" content="PitchMasters - Professional PES Esports Tournament Platform">
+    <title>PitchMasters - Get Started</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #070708;
+            --surface-color: rgba(255, 255, 255, 0.02);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --accent-orange: #FF6B35;
+            --accent-gradient: linear-gradient(135deg, #FF6B35 0%, #D85A30 100%);
+            --text-primary: #FFFFFF;
+            --text-secondary: #8A8F98;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+        }
+
+        /* Ambient Premium Background with Orange Core Glow */
+        body {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 45%, rgba(255, 107, 53, 0.05) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, #0f0f12 0%, #070708 100%);
+            animation: pageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Subtle Background Grid Overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            pointer-events: none;
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* Centered Brand Container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Elegant Brand Typography */
+        .text-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 7vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text-primary);
+            line-height: 1.1;
+            background: linear-gradient(to bottom, #FFFFFF 45%, #B3B3B3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .trademark {
+            font-size: 0.35em;
+            font-weight: 500;
+            letter-spacing: normal;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-left: 0.15em;
+            margin-top: -0.1em;
+            user-select: none;
+        }
+
+        /* Fixed Action Dock anchored directly to the screen bottom */
+        .onboarding-form {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            /* Leverages modern mobile device safe areas */
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+            z-index: 10;
+        }
+
+        /* High-End Interactive Orange Call to Action (Black Text Edition) */
+        .get-started-btn {
+            position: relative;
+            background: var(--accent-gradient);
+            color: #000000;
+            border: none;
+            padding: 1.125rem 2.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 16px;
+            cursor: pointer;
+            letter-spacing: 0.03em;
+            width: 100%;
+            box-shadow: 0 4px 24px rgba(216, 90, 48, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .get-started-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #D85A30 0%, #FF6B35 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .get-started-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(216, 90, 48, 0.35);
+        }
+
+        .get-started-btn:hover::before {
+            opacity: 1;
+        }
+
+        .get-started-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 16px rgba(216, 90, 48, 0.15);
+        }
+
+        .get-started-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .page, .get-started-btn, body {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="get-started-page" class="page">
+    <div class="container">
+        <div class="text-wrapper">
+            <h1 class="title">PitchMasters<span class="trademark">™</span></h1>
+        </div>
+    </div>
+
+    <div class="onboarding-form">
+        <button id="get-started-btn" class="get-started-btn">
+            <span>Enter Arena</span>
+        </button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const getStartedBtn = document.getElementById('get-started-btn');
+
+        function enterArena() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => {
+                window.location.href = '/client/favourite/';
+            }, 400);
+        }
+
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener('click', enterArena);
+        }
+    });
+</script>
+</body>
+</html>

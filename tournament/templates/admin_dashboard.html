@@ -1,0 +1,580 @@
+{% extends 'admin_dashboard_base.html' %}
+
+{% block content %}
+<style>
+    /* ── Tokens ──────────────────────────────────────────────── */
+    :root {
+        --orange:    #da5a30;
+        --orange-dim: rgba(218,90,48,.1);
+        --green:     #4ade80;
+        --green-dim: rgba(74,222,128,.08);
+        --red:       #ef4444;
+        --red-dim:   rgba(239,68,68,.08);
+        --z1: #09090b;
+        --z2: #0d0d0f;
+        --z3: #18181b;
+        --z4: #27272a;
+        --z5: #3f3f46;
+        --z6: #52525b;
+        --z7: #71717a;
+        --z8: #a1a1aa;
+        --z9: #e4e4e7;
+        --zw: #f4f4f5;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────── */
+    .dash-body { display: flex; flex-direction: column; gap: 32px; }
+
+    /* ── Stats row ───────────────────────────────────────────── */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+    .stat-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .stat-icon {
+        width: 32px; height: 32px;
+        border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--zw); line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--z7); font-weight: 500; }
+
+    /* ── Section headers ─────────────────────────────────────── */
+    .sec-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+    .sec-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--z7);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+    .sec-count {
+        font-size: 11px;
+        color: var(--z6);
+        background: var(--z4);
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+
+    /* ── Search / filter bar ─────────────────────────────────── */
+    .search-bar {
+        position: relative;
+        margin-bottom: 12px;
+    }
+    .search-bar i {
+        position: absolute;
+        left: 12px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--z6);
+        font-size: 14px;
+        pointer-events: none;
+    }
+    .search-bar input {
+        width: 100%;
+        height: 38px;
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 8px;
+        padding: 0 12px 0 36px;
+        color: var(--zw);
+        font-size: 13px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color .15s;
+    }
+    .search-bar input:focus { border-color: var(--orange); }
+    .search-bar input::placeholder { color: var(--z6); }
+
+    /* ── Tournament list ─────────────────────────────────────── */
+    .t-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .t-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: border-color .15s;
+    }
+    .t-card:hover { border-color: var(--z5); }
+
+    .t-card-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 14px 14px 16px;
+        cursor: pointer;
+    }
+    .t-color-bar {
+        width: 3px;
+        height: 36px;
+        border-radius: 2px;
+        background: var(--orange);
+        flex-shrink: 0;
+    }
+    .t-info { flex: 1; min-width: 0; }
+    .t-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--zw);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .t-meta {
+        display: flex;
+        gap: 6px;
+        margin-top: 3px;
+        flex-wrap: wrap;
+    }
+    .t-tag {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 1px 7px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .t-tag-format { background: rgba(99,102,241,.12); color: #818cf8; }
+    .t-tag-mode   { background: var(--z4); color: var(--z8); }
+    .t-tag-active { background: var(--green-dim); color: var(--green); }
+    .t-tag-draft  { background: var(--z4); color: var(--z7); }
+    .t-tag-completed { background: rgba(218,90,48,.1); color: var(--orange); }
+
+    .t-chevron {
+        color: var(--z6);
+        font-size: 14px;
+        transition: transform .2s;
+        flex-shrink: 0;
+    }
+    .t-card.expanded .t-chevron { transform: rotate(90deg); }
+
+    /* tournament expand actions */
+    .t-actions {
+        display: none;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 0 14px 14px;
+    }
+    .t-card.expanded .t-actions { display: grid; }
+
+    /* ── Team grid ───────────────────────────────────────────── */
+    .team-filter-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+    .tf-btn {
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid var(--z4);
+        background: transparent;
+        color: var(--z7);
+        cursor: pointer;
+        transition: all .15s;
+        white-space: nowrap;
+    }
+    .tf-btn.active, .tf-btn:hover {
+        background: var(--orange);
+        border-color: var(--orange);
+        color: #fff;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 8px;
+    }
+    .team-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        padding: 12px;
+        transition: border-color .15s;
+    }
+    .team-card:hover { border-color: var(--z5); }
+
+    .team-card-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .team-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--orange);
+        flex-shrink: 0;
+    }
+    .team-card-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--zw);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+    }
+    .team-card-sub {
+        font-size: 10px;
+        color: var(--z6);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 10px;
+    }
+    .team-card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 4px;
+        border-top: 1px solid var(--z4);
+        padding-top: 8px;
+    }
+    .ta-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        border-radius: 5px;
+        border: 1px solid var(--z4);
+        background: transparent;
+        color: var(--z7);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all .15s;
+        text-decoration: none;
+    }
+    .ta-btn:hover { border-color: var(--z5); color: var(--zw); }
+    .ta-btn.danger:hover { border-color: rgba(239,68,68,.4); color: var(--red); }
+
+    /* ── Live feed ───────────────────────────────────────────── */
+    .live-list { display: flex; flex-direction: column; gap: 8px; }
+    .live-card {
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .live-teams { font-size: 13px; font-weight: 600; color: var(--zw); }
+    .live-tourney { font-size: 10px; color: var(--z6); margin-top: 2px; }
+    .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(239,68,68,.08);
+        border: 1px solid rgba(239,68,68,.15);
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--red);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .pulse-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--red);
+        animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: .4; transform: scale(.7); }
+    }
+
+    /* ── Quick actions ───────────────────────────────────────── */
+    .quick-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .quick-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+        background: var(--z3);
+        border: 1px solid var(--z4);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .15s, transform .15s;
+        color: var(--zw);
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .quick-btn:hover { border-color: var(--orange); transform: translateY(-1px); }
+    .quick-btn i {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        background: var(--z4);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        color: var(--orange);
+        flex-shrink: 0;
+        transition: background .15s;
+    }
+    .quick-btn:hover i { background: var(--orange); color: #fff; }
+
+    /* ── Empty states ────────────────────────────────────────── */
+    .empty {
+        padding: 32px;
+        text-align: center;
+        color: var(--z6);
+        font-size: 12px;
+        background: var(--z3);
+        border: 1px dashed var(--z4);
+        border-radius: 10px;
+    }
+    .empty i { font-size: 28px; color: var(--z5); display: block; margin-bottom: 8px; }
+    .empty strong { display: block; color: var(--z8); font-size: 13px; margin-bottom: 4px; }
+</style>
+
+<main class="main-content">
+<div class="dash-body">
+
+    <!-- ── Stats ──────────────────────────────────────────────── -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(99,102,241,.1); color:#818cf8;">
+                <i class="bi bi-trophy-fill"></i>
+            </div>
+            <div class="stat-value">{{ tournaments_count|default:"0" }}</div>
+            <div class="stat-label">Tournaments</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:var(--green-dim); color:var(--green);">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-value">{{ total_teams_count|default:"0" }}</div>
+            <div class="stat-label">Teams</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:var(--orange-dim); color:var(--orange);">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div class="stat-value">{{ total_fixtures_count|default:"0" }}</div>
+            <div class="stat-label">Fixtures</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:var(--red-dim); color:var(--red);">
+                <i class="bi bi-broadcast"></i>
+            </div>
+            <div class="stat-value">{{ active_fixtures_count|default:"0" }}</div>
+            <div class="stat-label">Live Now</div>
+        </div>
+    </div>
+
+    <!-- ── Quick actions ─────────────────────────────────────── -->
+    <div>
+        <div class="sec-head"><span class="sec-title">Quick Actions</span></div>
+        <div class="quick-row">
+            <button class="quick-btn" onclick="openCreateTournamentSheet()">
+                <i class="bi bi-trophy-fill"></i>
+                New Tournament
+            </button>
+            <button class="quick-btn" onclick="openCreateTeamSheet()">
+                <i class="bi bi-shield-fill-plus"></i>
+                Add Team
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Tournaments ────────────────────────────────────────── -->
+    <div>
+        <div class="sec-head">
+            <span class="sec-title">Tournaments</span>
+            <span class="sec-count">{{ tournaments_count|default:"0" }}</span>
+        </div>
+
+        <div class="search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text" id="tournamentSearch" placeholder="Search tournaments…" oninput="searchItems('tournament')">
+        </div>
+
+        <div class="t-list" id="tournamentList">
+            {% for tournament in tournament_list %}
+            <div class="t-card" id="t-{{ tournament.id }}"
+                 data-name="{{ tournament.name|lower }}"
+                 data-format="{{ tournament.format|lower }}">
+
+                <div class="t-card-main" onclick="toggleTournament('t-{{ tournament.id }}')">
+                    <div class="t-color-bar"></div>
+                    <div class="t-info">
+                        <div class="t-name">{{ tournament.name }}</div>
+                        <div class="t-meta">
+                            <span class="t-tag t-tag-format">{{ tournament.get_format_display }}</span>
+                            <span class="t-tag t-tag-mode">{{ tournament.get_mode_display }}</span>
+                            {% if tournament.status == 'active' %}
+                                <span class="t-tag t-tag-active">Active</span>
+                            {% elif tournament.status == 'draft' %}
+                                <span class="t-tag t-tag-draft">Draft</span>
+                            {% elif tournament.status == 'completed' %}
+                                <span class="t-tag t-tag-completed">Completed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-right t-chevron"></i>
+                </div>
+
+                <div class="t-actions">
+                    <a href="/tournament/{{ tournament.id }}/view/" class="inline-btn"
+                       style="text-decoration:none; font-size:12px; height:34px;">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                    <button class="inline-btn" style="font-size:12px; height:34px;"
+                            onclick="openEditTournamentSheet('{{ tournament.id }}', '{{ tournament.name|escapejs }}', '{{ tournament.format }}', '{{ tournament.mode }}')">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <button class="inline-btn" style="font-size:12px; height:34px; color:#ef4444; border-color:rgba(239,68,68,.15);"
+                            onclick="openDeleteSheet('/tournament/{{ tournament.id }}/delete/', '{{ tournament.name|escapejs }}')">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty">
+                <i class="bi bi-trophy"></i>
+                <strong>No tournaments yet</strong>
+                Create your first tournament using the button above.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ── Teams ──────────────────────────────────────────────── -->
+    <div>
+        <div class="sec-head">
+            <span class="sec-title">Teams</span>
+            <span class="sec-count" id="teamCount">{{ team_list|length }}</span>
+        </div>
+
+        <div class="search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text" id="teamSearch" placeholder="Search teams…" oninput="searchItems('team')">
+        </div>
+
+        <!-- Tournament filter pills -->
+        <div class="team-filter-row" id="teamFilters">
+            <button class="tf-btn active" onclick="filterTeams('all', this)">All</button>
+            {% for tournament in tournament_list %}
+            <button class="tf-btn" onclick="filterTeams('{{ tournament.id }}', this)">
+                {{ tournament.name }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <div class="team-grid" id="teamGrid">
+            {% for team in team_list %}
+            <div class="team-card"
+                 data-name="{{ team.name|lower }}"
+                 data-player="{{ team.player_name|lower }}"
+                 data-tournament="{{ team.tournament.id }}">
+
+                <div class="team-card-top">
+                    <div class="team-dot"></div>
+                    <div class="team-card-name">{{ team.name }}</div>
+                </div>
+                <div class="team-card-sub">
+                    <i class="bi bi-person-fill"></i> {{ team.player_name|default:"—" }}
+                    {% if team.country %}&nbsp;· {{ team.country }}{% endif %}
+                </div>
+
+                <div class="team-card-actions">
+                    <a href="/tournament/team/{{ team.id }}/view/" class="ta-btn" title="View">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <button class="ta-btn" title="Edit"
+                            onclick="openEditTeamSheet('{{ team.id }}', '{{ team.tournament.id }}', '{{ team.name|escapejs }}', '{{ team.player_name|escapejs }}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="ta-btn danger" title="Delete"
+                            onclick="openDeleteSheet('/tournament/team/{{ team.id }}/delete/', '{{ team.name|escapejs }}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty" style="grid-column: 1/-1;">
+                <i class="bi bi-shield"></i>
+                <strong>No teams yet</strong>
+                Add a team using the button above.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+</main>
+
+<script>
+    // ── Expand / collapse tournament card ─────────────────────
+    function toggleTournament(id) {
+        const card = document.getElementById(id);
+        card.classList.toggle('expanded');
+    }
+
+    // ── Live search ───────────────────────────────────────────
+    function searchItems(type) {
+        const query = document.getElementById(type + 'Search').value.toLowerCase().trim();
+
+        if (type === 'tournament') {
+            let visible = 0;
+            document.querySelectorAll('#tournamentList .t-card').forEach(card => {
+                const match = card.dataset.name.includes(query) || card.dataset.format.includes(query);
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+        }
+
+        if (type === 'team') {
+            let visible = 0;
+            document.querySelectorAll('#teamGrid .team-card').forEach(card => {
+                const match = card.dataset.name.includes(query) || card.dataset.player.includes(query);
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('teamCount').textContent = visible || '0';
+        }
+    }
+
+    // ── Filter teams by tournament ────────────────────────────
+    function filterTeams(tournamentId, btn) {
+        // Update active pill
+        document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Clear search
+        document.getElementById('teamSearch').value = '';
+
+        let visible = 0;
+        document.querySelectorAll('#teamGrid .team-card').forEach(card => {
+            const show = tournamentId === 'all' || card.dataset.tournament === tournamentId;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        document.getElementById('teamCount').textContent = visible;
+    }
+</script>
+{% endblock %}

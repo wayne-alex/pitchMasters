@@ -1,0 +1,28 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Activity Feed - PitchMasters{% endblock title %}
+
+{% block date_strip_container %}{% endblock date_strip_container %}
+
+{% block extra_css %}
+.feed-card { background: var(--bg-card); border: 1px solid var(--border-grey); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.feed-meta { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 11px; margin-bottom: 6px; font-weight:600; }
+.feed-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.feed-body { color: var(--text-secondary); font-size: 12px; }
+{% endblock extra_css %}
+
+{% block content %}
+<h2 style="font-size:18px; font-weight:800; margin-bottom:16px;">Live Platform Activity Feed</h2>
+
+<div class="feed-card">
+  <div class="feed-meta"><span>GOAL TELEMETRY</span><span>2 MINS AGO</span></div>
+  <div class="feed-title">Goal! USA 1, Paraguay 0</div>
+  <div class="feed-body">Christian Pulisic scores with a brilliant strike from outside the box into the top right corner.</div>
+</div>
+
+<div class="feed-card">
+  <div class="feed-meta"><span>DISCIPLINARY ACTIONS</span><span>15 MINS AGO</span></div>
+  <div class="feed-title">Yellow Card Issued</div>
+  <div class="feed-body">Derry City central midfielder receives a booking for a tactical foul breaking a dangerous counter-attack.</div>
+</div>
+{% endblock content %}
